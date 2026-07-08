@@ -3,246 +3,632 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAP STAR Program — AI Day Voting</title>
+<title>SAP STAR Program — 2026 AI Day</title>
 <style>
-  :root {
-    --gold: #F0AB00;
-    --gold-light: #FFC832;
-    --gold-dim: rgba(240,171,0,0.15);
-    --dark: #1C2B33;
-    --dark2: #243341;
-    --dark3: #2E3F50;
-    --text: #E8EDF2;
-    --text-dim: #8A9BB0;
-    --border: rgba(255,255,255,0.08);
-    --card-bg: rgba(255,255,255,0.04);
-    --radius: 12px;
-    --radius-sm: 8px;
-    --admin: #9B59B6;
-    --admin-dim: rgba(155,89,182,0.15);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: '72', 'Segoe UI', Arial, sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; }
+/* ── SAP Horizon / Fiori design tokens ────────────────────
+   Shell bg        #fff
+   Page bg         #f5f6f7
+   Card bg         #fff
+   Border          #e5e5e5
+   Text primary    #1d2d3e
+   Text secondary  #556b82
+   Text disabled   #8996a1
+   Brand blue      #0070f2
+   Brand blue dark #0057c2
+   Gold accent     #e76500  (SAP Orange, used sparingly)
+   Success green   #188918
+   Error red       #bb0000
+   ────────────────────────────────────────────────────── */
+:root {
+  --bg:        #f5f6f7;
+  --surface:   #ffffff;
+  --border:    #e5e5e5;
+  --border2:   #d1d5db;
+  --text:      #1d2d3e;
+  --text2:     #556b82;
+  --text3:     #8996a1;
+  --blue:      #2356CA;
+  --blue-dark: #1a3f9e;
+  --blue-bg:   #eaeefc;
+  --orange:    #e76500;
+  --orange-bg: #fef3e6;
+  --green:     #188918;
+  --green-bg:  #ebf5eb;
+  --red:       #bb0000;
+  --red-bg:    #faeaea;
+  --radius:    8px;
+  --radius-sm: 6px;
 
-  .header {
-    background: linear-gradient(135deg, var(--dark2) 0%, var(--dark3) 100%);
-    border-bottom: 2px solid var(--gold);
-    padding: 14px 24px;
-    display: flex; align-items: center; gap: 16px;
-    position: sticky; top: 0; z-index: 100;
-  }
-  .header-logo { font-size: 20px; font-weight: 700; color: var(--gold); letter-spacing: 1px; white-space: nowrap; }
-  .header-sep { color: var(--text-dim); }
-  .header-title { font-size: 13px; color: var(--text-dim); }
-  .header-user { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-dim); }
-  .badge-role { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-  .badge-student { background: rgba(46,204,113,0.2); color: #2ECC71; border: 1px solid rgba(46,204,113,0.3); }
-  .badge-manager { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(240,171,0,0.3); }
-  .badge-admin { background: var(--admin-dim); color: var(--admin); border: 1px solid rgba(155,89,182,0.3); }
+  /* City */
+  --c-beijing:  #bb0000;  --c-beijing-bg:  #faeaea;
+  --c-dalian:   #2356CA;  --c-dalian-bg:   #eaeefc;
+  --c-chengdu:  #e76500;  --c-chengdu-bg:  #fef3e6;
+  --c-shanghai: #188918;  --c-shanghai-bg: #ebf5eb;
 
-  .view { display: none; }
-  .view.active { display: block; }
+  /* Block dots */
+  --b1:#2356CA; --b2:#188918; --b3:#e76500; --b4:#bb0000;
+  --b5:#6e3b7a; --b6:#0097a7; --b7:#c67600; --b8:#2e7d32;
+}
 
-  .landing { max-width: 520px; margin: 60px auto; padding: 0 16px; }
-  .landing-logo { text-align: center; margin-bottom: 32px; }
-  .landing-logo .big-title { font-size: 32px; font-weight: 700; color: var(--gold); }
-  .landing-logo .sub-title { font-size: 14px; color: var(--text-dim); margin-top: 6px; }
-  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
-  .form-group { margin-bottom: 18px; }
-  .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
-  .form-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; color: var(--text); font-size: 15px; outline: none; transition: border-color .2s; }
-  .form-input:focus { border-color: var(--gold); }
-  .role-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .role-option { background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px; cursor: pointer; text-align: center; transition: all .2s; }
-  .role-option:hover { border-color: var(--text-dim); }
-  .role-option.selected { border-color: var(--gold); background: var(--gold-dim); }
-  .role-option .role-icon { font-size: 24px; margin-bottom: 6px; }
-  .role-option .role-name { font-size: 13px; font-weight: 600; }
-  .role-option .role-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-  .btn { width: 100%; padding: 14px; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; cursor: pointer; transition: all .2s; }
-  .btn-primary { background: var(--gold); color: var(--dark); }
-  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); font-size: 13px; padding: 6px 12px; width: auto; border-radius: var(--radius-sm); cursor: pointer; transition: all .2s; }
-  .btn-ghost:hover { background: var(--card-bg); color: var(--text); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .setup-notice { background: rgba(155,89,182,0.1); border: 1px solid rgba(155,89,182,0.3); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 13px; color: #C39BD3; margin-bottom: 16px; line-height: 1.7; }
-  .setup-notice strong { display: block; color: var(--admin); margin-bottom: 4px; }
-  .setup-notice code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+body {
+  font-family: '72', 'SAP 72', -apple-system, 'Segoe UI', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
 
-  .channel-page { max-width: 900px; margin: 0 auto; padding: 32px 16px; }
-  .page-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-  .page-subtitle { font-size: 14px; color: var(--text-dim); margin-bottom: 28px; }
-  .channel-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 580px) { .channel-cards { grid-template-columns: 1fr; } }
-  .channel-card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 28px; cursor: pointer; transition: all .25s; position: relative; overflow: hidden; }
-  .channel-card:hover:not(.disabled) { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(240,171,0,0.1); }
-  .channel-card.disabled { opacity: 0.45; cursor: not-allowed; }
-  .channel-card::before { content:''; position:absolute; top:0; left:0; width:4px; height:100%; background:var(--gold); border-radius:4px 0 0 4px; }
-  .channel-card.disabled::before { background: var(--text-dim); }
-  .ch-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-  .ch-meta { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; line-height: 1.7; }
-  .ch-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
-  .ch-status.open { background: rgba(46,204,113,0.15); color: #2ECC71; }
-  .ch-status.closed { background: rgba(138,155,176,0.15); color: var(--text-dim); }
-  .ch-status.upcoming { background: var(--gold-dim); color: var(--gold); }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+/* ── SHELL HEADER ──────────────────────────────────────── */
+.shell {
+  height: 48px;
+  background: #1c2d3e;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.shell-logo {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .3px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.shell-logo-badge {
+  background: var(--orange);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: .3px;
+}
+.shell-title {
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  border-left: 1px solid rgba(255,255,255,0.2);
+  padding-left: 16px;
+}
+.shell-user {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+}
+.shell-user-name { font-weight: 500; color: #fff; }
 
-  .team-page { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
-  .team-page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-  .back-btn { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 7px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; transition: all .2s; }
-  .back-btn:hover { border-color: var(--gold); color: var(--gold); }
-  .tab-bar { display: flex; gap: 4px; background: rgba(255,255,255,0.04); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 20px; width: fit-content; }
-  .tab { padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-dim); transition: all .2s; border: none; background: transparent; }
-  .tab.active { background: var(--gold); color: var(--dark); }
-  .tab:hover:not(.active) { color: var(--text); }
-  .location-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-  .loc-btn { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; font-size: 12px; font-weight: 600; transition: all .2s; }
-  .loc-btn.active, .loc-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+/* ── VIEWS ─────────────────────────────────────────────── */
+.view { display: none; }
+.view.active { display: block; }
 
-  .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-bottom: 24px; }
-  .team-card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 18px; cursor: pointer; transition: all .2s; position: relative; }
-  .team-card:hover { border-color: var(--gold); transform: translateY(-1px); }
-  .team-card.voted { border-color: rgba(46,204,113,0.4); }
-  .voted-badge { position: absolute; top: 10px; right: 10px; background: rgba(46,204,113,0.2); color: #2ECC71; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; border: 1px solid rgba(46,204,113,0.3); }
-  .team-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .team-loc { font-size: 11px; color: var(--text-dim); margin-bottom: 10px; min-height: 16px; }
-  .team-score { font-size: 26px; font-weight: 700; color: var(--gold); line-height: 1; }
-  .team-score-label { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-  .team-voters { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+/* ── PAGE WRAPPER ──────────────────────────────────────── */
+.page { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
+.page-sm { max-width: 480px; margin: 0 auto; padding: 48px 24px; }
+.page-wide { max-width: 1160px; margin: 0 auto; padding: 32px 24px; }
 
-  .leaderboard { display: flex; flex-direction: column; gap: 10px; }
-  .lb-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all .2s; }
-  .lb-item:hover { border-color: var(--gold); background: rgba(240,171,0,0.04); }
-  .lb-rank { font-size: 20px; font-weight: 800; min-width: 36px; color: var(--text-dim); }
-  .lb-rank.top1 { color: #FFD700; }
-  .lb-rank.top2 { color: #C0C0C0; }
-  .lb-rank.top3 { color: #CD7F32; }
-  .lb-info { flex: 1; }
-  .lb-name { font-size: 15px; font-weight: 600; }
-  .lb-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-  .lb-score-wrap { text-align: right; }
-  .lb-score { font-size: 24px; font-weight: 700; color: var(--gold); }
-  .lb-score-sub { font-size: 11px; color: var(--text-dim); }
-  .score-bars { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
-  .score-bar-row { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-dim); }
-  .bar-track { flex: 1; height: 4px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
-  .bar-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width .5s ease; }
+/* ── TYPOGRAPHY ────────────────────────────────────────── */
+.page-title  { font-size: 24px; font-weight: 700; color: var(--text);  margin-bottom: 4px; }
+.page-sub    { font-size: 14px; color: var(--text2); margin-bottom: 32px; }
+.section-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 12px; }
 
-  .admin-page { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
-  .admin-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
-  .admin-badge { background: var(--admin-dim); color: var(--admin); border: 1px solid rgba(155,89,182,0.35); padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-  .admin-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 28px; }
-  .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; }
-  .stat-val { font-size: 28px; font-weight: 800; color: var(--gold); }
-  .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-  .admin-section-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
-  .channel-toggle { display: flex; gap: 4px; background: rgba(255,255,255,0.04); border-radius: var(--radius-sm); padding: 4px; }
-  .ch-tab { padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-dim); border: none; background: transparent; transition: all .2s; }
-  .ch-tab.active { background: var(--admin); color: #fff; }
-  .admin-lb { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
-  .admin-lb-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px; }
-  .admin-voter-list { display: flex; flex-direction: column; gap: 6px; }
-  .voter-row { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; display: flex; align-items: center; gap: 12px; font-size: 13px; flex-wrap: wrap; }
-  .voter-name { font-weight: 600; min-width: 120px; }
-  .voter-score { color: var(--gold); font-weight: 700; margin-left: auto; }
-  .detail-toggle { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-top: 0; transition: all .2s; }
-  .detail-toggle:hover { border-color: var(--admin); color: var(--admin); }
-  .voter-detail { display: none; width: 100%; margin-top: 8px; font-size: 12px; color: var(--text-dim); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 8px; }
-  .refresh-btn { background: var(--admin-dim); border: 1px solid rgba(155,89,182,0.35); color: var(--admin); padding: 7px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-weight: 600; transition: all .2s; }
-  .refresh-btn:hover { background: rgba(155,89,182,0.25); }
+/* ── CARD ──────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+}
 
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
-  .modal-overlay.hidden { display: none; }
-  .modal { background: var(--dark2); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; position: relative; }
-  .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; position: sticky; top: 0; background: var(--dark2); z-index: 1; }
-  .modal-title { font-size: 18px; font-weight: 700; }
-  .modal-subtitle { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
-  .modal-close { background: transparent; border: 1px solid var(--border); color: var(--text-dim); cursor: pointer; width: 32px; height: 32px; border-radius: 6px; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .2s; }
-  .modal-close:hover { border-color: var(--text-dim); color: var(--text); }
-  .modal-body { padding: 20px 24px; }
-  .criterion { margin-bottom: 24px; }
-  .criterion-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .criterion-name { font-size: 14px; font-weight: 600; }
-  .criterion-weight { font-size: 12px; color: var(--text-dim); }
-  .criterion-value { font-size: 28px; font-weight: 800; color: var(--gold); min-width: 40px; text-align: right; }
-  .slider { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 6px; background: rgba(255,255,255,0.1); outline: none; cursor: pointer; }
-  .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--gold); cursor: pointer; border: 3px solid var(--dark2); box-shadow: 0 0 0 2px var(--gold); transition: transform .1s; }
-  .slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
-  .score-preview { background: rgba(240,171,0,0.08); border: 1px solid rgba(240,171,0,0.25); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 16px; }
-  .preview-total { font-size: 42px; font-weight: 800; color: var(--gold); }
-  .preview-label { font-size: 13px; color: var(--text-dim); }
-  .preview-breakdown { font-size: 11px; color: var(--text-dim); line-height: 1.8; }
-  .comment-area { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; color: var(--text); font-size: 14px; resize: vertical; min-height: 80px; outline: none; margin-bottom: 16px; font-family: inherit; transition: border-color .2s; }
-  .comment-area:focus { border-color: var(--gold); }
-  .comments-section { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px; }
-  .comments-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: var(--text-dim); }
-  .comment-item { background: rgba(255,255,255,0.03); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 10px; border-left: 3px solid var(--border); }
-  .comment-meta { font-size: 11px; color: var(--text-dim); margin-bottom: 5px; display: flex; gap: 8px; align-items: center; }
-  .comment-text { font-size: 13px; line-height: 1.6; }
-  .no-comments { font-size: 13px; color: var(--text-dim); font-style: italic; }
+/* ── FORM ──────────────────────────────────────────────── */
+.form-group { margin-bottom: 20px; }
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.form-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0,112,242,0.12);
+}
+.form-input::placeholder { color: var(--text3); }
 
-  .rt-indicator { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim); margin-bottom: 16px; }
-  .rt-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); }
-  .rt-dot.live { background: #2ECC71; box-shadow: 0 0 6px #2ECC71; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+/* ── ROLE PICKER ───────────────────────────────────────── */
+.role-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.role-option {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .15s, background .15s;
+  background: var(--surface);
+  font-family: inherit;
+  width: 100%;
+}
+.role-option:hover { border-color: var(--blue); background: var(--blue-bg); }
+.role-option.selected { border-color: var(--blue); background: var(--blue-bg); }
+.role-option .role-icon { font-size: 22px; margin-bottom: 6px; }
+.role-option .role-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.role-option .role-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
 
-  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--dark3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 24px; font-size: 14px; z-index: 1000; transition: transform .3s ease; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.success { border-color: rgba(46,204,113,0.4); color: #2ECC71; }
-  .toast.error { border-color: rgba(231,76,60,0.4); color: #E74C3C; }
+/* ── BUTTONS ───────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+.btn-full { width: 100%; }
+.btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+.btn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
+.btn-primary:disabled { background: #b0c8f4; border-color: #b0c8f4; cursor: not-allowed; }
+.btn-secondary { background: var(--surface); color: var(--blue); border-color: var(--border2); }
+.btn-secondary:hover { background: var(--blue-bg); border-color: var(--blue); }
+.btn-ghost { background: transparent; color: var(--text2); border-color: transparent; font-size: 13px; padding: 6px 12px; }
+.btn-ghost:hover { background: var(--bg); color: var(--text); }
 
-  .empty-state { text-align: center; padding: 40px; color: var(--text-dim); }
-  .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+/* ── BADGE ─────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+.badge-student { background: var(--green-bg); color: var(--green); }
+.badge-manager { background: var(--orange-bg); color: var(--orange); }
+.badge-admin   { background: #f0e8f8; color: #6e3b7a; }
+
+/* ── NOTICE ────────────────────────────────────────────── */
+.notice {
+  background: var(--orange-bg);
+  border: 1px solid #f4b961;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #7a3900;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.notice code { background: rgba(0,0,0,0.07); padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12px; }
+
+/* ── CHANNEL CARDS ─────────────────────────────────────── */
+.channel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 560px) { .channel-grid { grid-template-columns: 1fr; } }
+
+.channel-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 28px;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+  position: relative;
+}
+.channel-card:hover:not(.disabled) {
+  border-color: var(--blue);
+  box-shadow: 0 2px 12px rgba(35,86,202,0.12);
+}
+.channel-card.disabled { opacity: .5; cursor: not-allowed; }
+.ch-icon { font-size: 40px; margin-bottom: 16px; }
+.ch-name { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.ch-meta { font-size: 13px; color: var(--text2); margin-bottom: 18px; line-height: 1.7; }
+.ch-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+.ch-pill.open     { background: var(--green-bg); color: var(--green); }
+.ch-pill.closed   { background: var(--bg); color: var(--text3); border: 1px solid var(--border); }
+.ch-pill.upcoming { background: var(--orange-bg); color: var(--orange); }
+.ch-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.ch-pill-dot.live { animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+/* ── TEAM PAGE CHROME ──────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.page-header-title { font-size: 20px; font-weight: 700; }
+
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.tab {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+  font-family: inherit;
+}
+.tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 600; }
+.tab:hover:not(.active) { color: var(--text); }
+
+/* ── LOCATION FILTER ───────────────────────────────────── */
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.filter-btn {
+  padding: 5px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all .15s;
+}
+.filter-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-bg); }
+.filter-btn.active { border-color: var(--blue); color: var(--blue); background: var(--blue-bg); font-weight: 600; }
+.filter-btn.city-beijing.active  { border-color: var(--c-beijing);  color: var(--c-beijing);  background: var(--c-beijing-bg); }
+.filter-btn.city-dalian.active   { border-color: var(--c-dalian);   color: var(--c-dalian);   background: var(--c-dalian-bg); }
+.filter-btn.city-chengdu.active  { border-color: var(--c-chengdu);  color: var(--c-chengdu);  background: var(--c-chengdu-bg); }
+.filter-btn.city-shanghai.active { border-color: var(--c-shanghai); color: var(--c-shanghai); background: var(--c-shanghai-bg); }
+
+/* ── BLOCK HEADER ──────────────────────────────────────── */
+.block-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  margin: 28px 0 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+}
+.block-header:first-child { margin-top: 0; }
+.block-header-range {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: .8;
+  font-size: 12px;
+}
+
+/* ── CITY SECTION HEADER (hackathon) ───────────────────── */
+.city-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  margin: 28px 0 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+}
+.city-section-header:first-child { margin-top: 0; }
+
+/* ── TEAM GRID (voter) ─────────────────────────────────── */
+.team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 4px; }
+
+.team-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 18px 18px;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.team-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--card-accent, var(--border));
+  transition: opacity .15s;
+}
+.team-card:hover {
+  border-color: var(--blue);
+  box-shadow: 0 4px 16px rgba(35,86,202,0.12);
+  transform: translateY(-1px);
+}
+.team-card:hover::before { background: var(--blue); }
+.team-card.voted { border-color: var(--green); background: #f8fdf8; }
+.team-card.voted::before { background: var(--green); }
+.team-card-name { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.team-card-topic { font-size: 12px; color: var(--text2); line-height: 1.4; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.team-card-city {
+  display: inline-block;
+  font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px;
+  margin-bottom: 8px;
+}
+.voted-check {
+  position: absolute;
+  top: 10px; right: 12px;
+  font-size: 13px;
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* ── ADMIN EDIT CONTROLS ───────────────────────────────── */
+.btn-danger { background: var(--surface); color: var(--red); border-color: var(--border2); font-size: 12px; padding: 4px 10px; }
+.btn-danger:hover { background: var(--red-bg); border-color: var(--red); }
+.btn-edit   { background: var(--surface); color: var(--blue); border-color: var(--border2); font-size: 12px; padding: 4px 10px; }
+.btn-edit:hover { background: var(--blue-bg); border-color: var(--blue); }
+.inline-edit-form { display:none; margin-top:8px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; }
+.inline-edit-form.open { display:block; }
+.inline-edit-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+.inline-edit-row label { font-size:12px; font-weight:600; color:var(--text2); min-width:60px; }
+.inline-edit-input { flex:1; min-width:120px; border:1px solid var(--border2); border-radius:var(--radius-sm); padding:6px 10px; font-size:13px; font-family:inherit; outline:none; color:var(--text); background:var(--surface); }
+.inline-edit-input:focus { border-color:var(--blue); }
+.inline-edit-actions { display:flex; gap:6px; }
+
+/* Topics panel (admin) */
+.topics-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; margin-bottom:16px; }
+.topic-item { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; }
+.topic-item-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.topic-item-name { font-weight:700; font-size:14px; }
+.topic-current { font-size:12px; color:var(--text2); margin-bottom:6px; line-height:1.4; }
+.topic-edit-row { display:none; gap:6px; }
+.topic-edit-row.open { display:flex; }
+.topic-edit-input { flex:1; border:1px solid var(--border2); border-radius:var(--radius-sm); padding:6px 10px; font-size:13px; font-family:inherit; outline:none; color:var(--text); }
+.topic-edit-input:focus { border-color:var(--blue); }
+
+/* ── STATUS BAR ────────────────────────────────────────── */
+.status-bar { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text3); margin-bottom: 20px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+.status-dot.live { background: var(--green); animation: pulse 2s infinite; }
+
+/* ── MODAL ─────────────────────────────────────────────── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 400;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.overlay.hidden { display: none; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%; max-width: 520px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+}
+.modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  position: sticky; top: 0; background: var(--surface); z-index: 1;
+}
+.modal-title { font-size: 17px; font-weight: 700; }
+.modal-sub   { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.modal-close {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text2); cursor: pointer;
+  width: 30px; height: 30px; border-radius: var(--radius-sm);
+  font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: all .15s;
+}
+.modal-close:hover { border-color: var(--text2); color: var(--text); }
+.modal-body { padding: 24px; }
+
+/* Slider criterion */
+.criterion { margin-bottom: 28px; }
+.criterion-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 10px;
+}
+.criterion-name   { font-size: 14px; font-weight: 600; }
+.criterion-weight { font-size: 12px; color: var(--text2); }
+.criterion-val    { font-size: 22px; font-weight: 700; color: var(--blue); min-width: 28px; text-align: right; }
+
+input[type=range] {
+  -webkit-appearance: none; width: 100%; height: 4px;
+  border-radius: 4px; background: var(--border2); outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--blue); cursor: pointer;
+  border: 2px solid #fff; box-shadow: 0 0 0 1px var(--blue);
+  transition: transform .1s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+.comment-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: block; }
+.comment-hint  { font-size: 12px; color: var(--text3); margin-left: 6px; font-weight: 400; }
+.comment-area {
+  width: 100%; background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); padding: 10px 12px; color: var(--text);
+  font-size: 14px; font-family: inherit; resize: vertical; min-height: 76px;
+  outline: none; transition: border-color .15s, box-shadow .15s; margin-bottom: 16px;
+}
+.comment-area:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,112,242,0.12); }
+.comment-area::placeholder { color: var(--text3); }
+
+.modal-comments { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+.modal-comments-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 12px; }
+.comment-item { padding: 10px 12px; border-radius: var(--radius-sm); background: var(--bg); margin-bottom: 8px; }
+.comment-item:last-child { margin-bottom: 0; }
+.comment-meta { font-size: 11px; color: var(--text2); margin-bottom: 4px; display: flex; gap: 6px; align-items: center; }
+.comment-text { font-size: 13px; color: var(--text); line-height: 1.55; }
+.no-comments  { font-size: 13px; color: var(--text3); font-style: italic; }
+
+/* ── ADMIN DASHBOARD ───────────────────────────────────── */
+.admin-bar {
+  background: #f0e8f8;
+  border-bottom: 1px solid #dbc8ee;
+  padding: 10px 24px;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13px; color: #6e3b7a;
+}
+.admin-bar strong { font-weight: 700; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 28px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; }
+.stat-val   { font-size: 28px; font-weight: 700; color: var(--blue); line-height: 1; }
+.stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+.stat-card.live .stat-val { color: var(--green); }
+
+.ch-toggle { display: flex; border: 1px solid var(--border2); border-radius: var(--radius-sm); overflow: hidden; width: fit-content; }
+.ch-tab { padding: 7px 18px; font-size: 13px; font-weight: 500; color: var(--text2); background: var(--surface); border: none; cursor: pointer; font-family: inherit; transition: all .15s; }
+.ch-tab + .ch-tab { border-left: 1px solid var(--border2); }
+.ch-tab.active { background: var(--blue); color: #fff; font-weight: 600; }
+
+/* Admin leaderboard table */
+.lb-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.lb-table th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; border-bottom: 2px solid var(--border); background: var(--bg); }
+.lb-table td { padding: 12px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.lb-table tr:hover td { background: var(--bg); }
+.lb-rank-num { font-size: 15px; font-weight: 700; color: var(--text2); width: 36px; }
+.lb-rank-num.top1 { color: #b8860b; }
+.lb-rank-num.top2 { color: #7a7a7a; }
+.lb-rank-num.top3 { color: #a05000; }
+.lb-score-big { font-size: 18px; font-weight: 700; color: var(--blue); }
+.sub-scores { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* Score bar inline */
+.inline-bar { display: inline-block; width: 60px; height: 4px; background: var(--border); border-radius: 4px; vertical-align: middle; margin-left: 4px; overflow: hidden; }
+.inline-bar-fill { height: 100%; background: var(--blue); border-radius: 4px; }
+
+/* Voter rows */
+.voter-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.voter-table th { padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; border-bottom: 2px solid var(--border); background: var(--bg); }
+.voter-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.voter-table tr:hover td { background: var(--bg); }
+.expand-btn { background: transparent; border: 1px solid var(--border2); color: var(--text2); padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: inherit; transition: all .15s; }
+.expand-btn:hover { border-color: var(--blue); color: var(--blue); }
+.voter-detail-row { display: none; }
+.voter-detail-row td { background: var(--bg); padding: 10px 16px; }
+.voter-detail-inner { font-size: 12px; color: var(--text2); line-height: 2; }
+
+/* Section heading */
+.admin-section { font-size: 16px; font-weight: 700; color: var(--text); margin: 32px 0 14px; display: flex; align-items: center; gap: 10px; }
+.admin-section-sep { flex: 1; height: 1px; background: var(--border); }
+.refresh-btn { margin-left: auto; background: var(--surface); border: 1px solid var(--border2); color: var(--text2); padding: 6px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-family: inherit; transition: all .15s; }
+.refresh-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+/* ── CITY / BLOCK TAGS ─────────────────────────────────── */
+.city-tag {
+  display: inline-block;
+  padding: 2px 7px; border-radius: 8px;
+  font-size: 11px; font-weight: 600;
+}
+.city-tag.Beijing  { background: var(--c-beijing-bg);  color: var(--c-beijing); }
+.city-tag.Dalian   { background: var(--c-dalian-bg);   color: var(--c-dalian); }
+.city-tag.Chengdu  { background: var(--c-chengdu-bg);  color: var(--c-chengdu); }
+.city-tag.Shanghai { background: var(--c-shanghai-bg); color: var(--c-shanghai); }
+
+/* ── TOAST ─────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--text); color: #fff;
+  border-radius: var(--radius-sm); padding: 10px 20px; font-size: 13px;
+  z-index: 999; transition: transform .25s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2); white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--green); }
+.toast.error   { background: var(--red); }
+
+.empty { text-align: center; padding: 48px 24px; color: var(--text3); }
+.empty-icon { font-size: 36px; margin-bottom: 10px; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
 </style>
 </head>
 <body>
 
-<!-- ============================================================
-  JSONBIN CONFIGURATION — EDIT THESE TWO LINES ONLY
-  Step 1: Sign up free at https://jsonbin.io
-  Step 2: Click your avatar → API Keys → copy the Secret Key
-  Step 3: Paste the key below, replacing YOUR_SECRET_KEY_HERE
-  Step 4: Change false to true on the JSONBIN_CONFIGURED line
-  Step 5: Save the file — done!
-  ============================================================ -->
+<!-- JSONBin config -->
 <script>
-window.JSONBIN_API_KEY    = '$2a$10$WopktsKtiAxQEU1cYFgI/.tUzmbZc1SVtt8yOGrmv.TdQfzpPHmUm';   // ← paste your key here
-window.JSONBIN_BIN_ID     = '';                        // leave blank, auto-created
-window.JSONBIN_CONFIGURED = true;                     // ← change to true after adding key
+window.JSONBIN_API_KEY    = '$2a$10$WopktsKtiAxQEU1cYFgI/.tUzmbZc1SVtt8yOGrmv.TdQfzpPHmUm';
+window.JSONBIN_BIN_ID     = '';
+window.JSONBIN_CONFIGURED = true;
 </script>
 
-<!-- Header -->
-<div class="header">
-  <div class="header-logo">SAP STAR</div>
-  <div class="header-sep">|</div>
-  <div class="header-title">AI Day Voting</div>
-  <div class="header-user" id="headerUser" style="display:none">
-    <span id="headerName"></span>
-    <span id="headerBadge" class="badge-role"></span>
-    <button class="btn-ghost" onclick="goToAdmin()" id="btnAdminNav" style="display:none">Admin</button>
-    <button class="btn-ghost" onclick="logout()">Logout</button>
+<!-- SHELL -->
+<div class="shell">
+  <div class="shell-logo">
+<img src="data:image/png;base64,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" alt="SAP" style="height:28px;display:block;">
+    STAR China: 2026 AI Day
+  </div>
+  <div class="shell-title">AI Day Voting</div>
+  <div class="shell-user" id="shellUser" style="display:none">
+    <span class="shell-user-name" id="shellName"></span>
+    <span id="shellBadge" class="badge"></span>
+    <button class="btn btn-ghost" onclick="goToAdmin()" id="btnAdminNav" style="display:none;color:rgba(255,255,255,.75)">Admin</button>
+    <button class="btn btn-ghost" onclick="logout()" style="color:rgba(255,255,255,.6)">Log out</button>
   </div>
 </div>
 
 <div id="app">
 
-  <!-- LANDING -->
+  <!-- ═══ LANDING ═══════════════════════════════════════ -->
   <div class="view active" id="viewLanding">
-    <div class="landing">
-      <div class="landing-logo">
-        <div class="big-title">AI Day 2025</div>
-        <div class="sub-title">Showcase &amp; Hackathon Voting</div>
+    <div class="page-sm">
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="font-size:28px;font-weight:700;color:var(--text);margin-bottom:4px">2026 AI Day</div>
+        <div style="font-size:14px;color:var(--text2)">Showcase &amp; Hackathon Voting</div>
       </div>
       <div class="card">
-        <div id="setupNotice" class="setup-notice" style="display:none">
-          <strong>&#9881; JSONBin not configured — running in local demo mode</strong>
-          To enable real-time sync across all voters: sign up at <strong>jsonbin.io</strong>,
-          copy your Secret Key, paste it as <code>JSONBIN_API_KEY</code> near the top of this
-          file, and set <code>JSONBIN_CONFIGURED = true</code>.
+        <div id="setupNotice" class="notice" style="display:none">
+          <strong>JSONBin not configured</strong> — running in local mode.<br>
+          Fill in <code>JSONBIN_API_KEY</code> at the top of this file and set <code>JSONBIN_CONFIGURED = true</code> to enable real-time sync.
         </div>
         <div class="form-group">
           <label class="form-label">Name</label>
@@ -255,133 +641,135 @@ window.JSONBIN_CONFIGURED = true;                     // ← change to true afte
         <div class="form-group">
           <label class="form-label">Role</label>
           <div class="role-picker">
-            <div class="role-option" id="roleStudent" onclick="selectRole('student')">
-              <div class="role-icon">&#127891;</div>
+            <button type="button" class="role-option" id="roleStudent" onclick="selectRole('student')">
+              <div class="role-icon">🎓</div>
               <div class="role-name">Student</div>
               <div class="role-desc">Participant</div>
-            </div>
-            <div class="role-option" id="roleManager" onclick="selectRole('manager')">
-              <div class="role-icon">&#128188;</div>
+            </button>
+            <button type="button" class="role-option" id="roleManager" onclick="selectRole('manager')">
+              <div class="role-icon">💼</div>
               <div class="role-name">Manager / Mentor</div>
               <div class="role-desc">Reviewer</div>
-            </div>
+            </button>
           </div>
         </div>
-        <button class="btn btn-primary" id="btnEnter" onclick="enterApp()" disabled>Enter Voting</button>
+        <button class="btn btn-primary btn-full" id="btnEnter" onclick="enterApp()" disabled>Enter Voting</button>
       </div>
     </div>
   </div>
 
-  <!-- CHANNEL SELECTION -->
+  <!-- ═══ CHANNEL SELECT ════════════════════════════════ -->
   <div class="view" id="viewChannels">
-    <div class="channel-page">
+    <div class="page">
       <div class="page-title">Select Channel</div>
-      <div class="page-subtitle" id="welcomeMsg"></div>
-      <div class="channel-cards" id="channelCards"></div>
+      <div class="page-sub" id="welcomeMsg"></div>
+      <div class="channel-grid" id="channelCards"></div>
     </div>
   </div>
 
-  <!-- TEAM LIST / LEADERBOARD -->
+  <!-- ═══ TEAM LIST (voters) ════════════════════════════ -->
   <div class="view" id="viewTeams">
-    <div class="team-page">
-      <div class="team-page-header">
-        <button class="back-btn" onclick="goBack()">&#8592; Back</button>
-        <span id="channelLabel" style="font-size:18px;font-weight:700;"></span>
+    <div class="page-wide">
+      <div class="page-header">
+        <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+        <span class="page-header-title" id="channelLabel"></span>
       </div>
       <div class="tab-bar">
         <button class="tab active" id="tabVote" onclick="switchTab('vote')">Vote</button>
-        <button class="tab" id="tabLeaderboard" onclick="switchTab('leaderboard')">Leaderboard</button>
       </div>
-      <div class="location-filter" id="locationFilter" style="display:none"></div>
+      <div class="filter-row" id="locationFilter" style="display:none"></div>
+
+      <!-- Vote panel -->
       <div id="panelVote">
-        <div class="rt-indicator">
-          <div class="rt-dot" id="voteDot"></div>
+        <div class="status-bar">
+          <div class="status-dot" id="voteDot"></div>
           <span id="voteStatusText"></span>
         </div>
-        <div class="team-grid" id="teamGrid"></div>
+        <div id="teamContent"></div>
       </div>
-      <div id="panelLeaderboard" style="display:none">
-        <div class="rt-indicator">
-          <div class="rt-dot" id="lbDot"></div>
-          <span id="lbStatusText"></span>
-        </div>
-        <div id="locationFilterLb" class="location-filter" style="display:none"></div>
-        <div class="leaderboard" id="leaderboardList"></div>
-      </div>
+
+      <!-- Comments panel (admin-only, hidden for voters) -->
+      <div id="panelComments" style="display:none"></div>
     </div>
   </div>
 
-  <!-- ADMIN VIEW -->
+  <!-- ═══ ADMIN DASHBOARD ═══════════════════════════════ -->
   <div class="view" id="viewAdmin">
-    <div class="admin-page">
-      <div class="admin-header">
-        <button class="back-btn" onclick="switchView('viewChannels')">&#8592; Back</button>
-        <span style="font-size:18px;font-weight:700;">Admin Dashboard</span>
-        <span class="admin-badge">&#128081; Admin</span>
-        <button class="refresh-btn" onclick="adminRefresh()">&#8635; Refresh</button>
-      </div>
-      <div class="admin-stats" id="adminStats"></div>
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
-        <div class="admin-section-title" style="margin:0">Rankings</div>
-        <div class="channel-toggle">
-          <button class="ch-tab active" id="adminTabShowcase" onclick="adminSwitchChannel('showcase')">Showcase</button>
-          <button class="ch-tab" id="adminTabHackathon" onclick="adminSwitchChannel('hackathon')">Hackathon</button>
+    <div class="admin-bar">
+      <strong>👑 Admin View</strong>
+      <span style="color:#8c6ba0">—</span>
+      <span>All scores and rankings visible only to you</span>
+      <button class="refresh-btn" id="adminRefreshBtn" onclick="adminRefresh()">↻ Refresh</button>
+      <button class="btn btn-ghost" onclick="switchView('viewChannels')" style="color:#6e3b7a">← Back</button>
+    </div>
+    <div class="page-wide">
+      <!-- Stats -->
+      <div class="admin-section">Overview <div class="admin-section-sep"></div></div>
+      <div class="stats-grid" id="adminStats"></div>
+
+      <!-- Rankings -->
+      <div class="admin-section" style="margin-top:8px">
+        Rankings
+        <div class="ch-toggle" style="margin-left:0">
+          <button class="ch-tab active" id="adminTabShowcase"  onclick="adminSwitchChannel('showcase')">Showcase</button>
+          <button class="ch-tab"        id="adminTabHackathon" onclick="adminSwitchChannel('hackathon')">Hackathon</button>
         </div>
-        <div class="location-filter" id="adminLocFilter" style="display:none;margin:0"></div>
+        <div class="filter-row" id="adminLocFilter" style="display:none;margin:0"></div>
+        <div class="admin-section-sep"></div>
       </div>
-      <div class="admin-lb" id="adminLeaderboard"></div>
-      <div class="admin-section-title">All Voters</div>
-      <div class="admin-voter-list" id="adminVoterList"></div>
+      <div id="adminLeaderboard"></div>
+
+      <!-- Voters -->
+      <div class="admin-section">All Voters <div class="admin-section-sep"></div></div>
+      <div id="adminVoterList"></div>
+
+      <div class="admin-section" style="margin-top:8px">Showcase Team Topics <div class="admin-section-sep"></div></div>
+      <div class="topics-grid" id="adminTopicsGrid"></div>
     </div>
   </div>
 
-</div>
+</div><!-- #app -->
 
-<!-- Voting Modal -->
-<div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+<!-- VOTING MODAL -->
+<div class="overlay hidden" id="modalOverlay" onclick="closeModalOnOverlay(event)">
   <div class="modal">
     <div class="modal-header">
       <div>
         <div class="modal-title" id="modalTeamName"></div>
-        <div class="modal-subtitle" id="modalTeamSub"></div>
+        <div class="modal-sub" id="modalTeamSub"></div>
       </div>
-      <button class="modal-close" onclick="closeModal()">&#215;</button>
+      <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
-      <div class="score-preview">
-        <div>
-          <div class="preview-total" id="previewTotal">5.0</div>
-          <div class="preview-label">Total / 10</div>
+      <div class="criterion">
+        <div class="criterion-row">
+          <div><span class="criterion-name">AI Innovation</span> <span class="criterion-weight">40%</span></div>
+          <div class="criterion-val" id="valAI">5</div>
         </div>
-        <div class="preview-breakdown" id="previewBreakdown"></div>
+        <input type="range" id="sliderAI" min="1" max="10" value="5" oninput="updateSliders()">
       </div>
       <div class="criterion">
-        <div class="criterion-header">
-          <div><div class="criterion-name">AI Innovation</div><div class="criterion-weight">Weight 40%</div></div>
-          <div class="criterion-value" id="valAI">5</div>
+        <div class="criterion-row">
+          <div><span class="criterion-name">Business Impact</span> <span class="criterion-weight">40%</span></div>
+          <div class="criterion-val" id="valBiz">5</div>
         </div>
-        <input type="range" class="slider" id="sliderAI" min="1" max="10" value="5" oninput="updatePreview()">
+        <input type="range" id="sliderBiz" min="1" max="10" value="5" oninput="updateSliders()">
       </div>
       <div class="criterion">
-        <div class="criterion-header">
-          <div><div class="criterion-name">Business Impact</div><div class="criterion-weight">Weight 40%</div></div>
-          <div class="criterion-value" id="valBiz">5</div>
+        <div class="criterion-row">
+          <div><span class="criterion-name">Presentation &amp; Teamwork</span> <span class="criterion-weight">20%</span></div>
+          <div class="criterion-val" id="valPres">5</div>
         </div>
-        <input type="range" class="slider" id="sliderBiz" min="1" max="10" value="5" oninput="updatePreview()">
+        <input type="range" id="sliderPres" min="1" max="10" value="5" oninput="updateSliders()">
       </div>
-      <div class="criterion">
-        <div class="criterion-header">
-          <div><div class="criterion-name">Presentation &amp; Teamwork</div><div class="criterion-weight">Weight 20%</div></div>
-          <div class="criterion-value" id="valPres">5</div>
-        </div>
-        <input type="range" class="slider" id="sliderPres" min="1" max="10" value="5" oninput="updatePreview()">
-      </div>
-      <label class="form-label">Comment <span style="font-weight:400;color:var(--text-dim)">(optional)</span></label>
-      <textarea class="comment-area" id="inputComment" placeholder="Leave your thoughts on this team&#8230;"></textarea>
-      <button class="btn btn-primary" id="btnSubmit" onclick="submitVote()">Submit Score</button>
-      <div class="comments-section">
-        <div class="comments-title">Audience Comments</div>
-        <div id="commentsList"></div>
+
+      <label class="comment-label">Comment <span class="comment-hint">(optional)</span></label>
+      <textarea class="comment-area" id="inputComment" placeholder="Leave your thoughts on this team…"></textarea>
+      <button class="btn btn-primary btn-full" id="btnSubmit" onclick="submitVote()">Submit Score</button>
+
+      <div class="modal-comments" id="modalCommentsSection" style="display:none">
+        <div class="modal-comments-title">Comments</div>
+        <div id="modalCommentsList"></div>
       </div>
     </div>
   </div>
@@ -392,690 +780,739 @@ window.JSONBIN_CONFIGURED = true;                     // ← change to true afte
 <script>
 'use strict';
 
-// ==================== CONSTANTS ====================
-const ADMIN_IDS = ['i774309'];
+// ── CONFIG ────────────────────────────────────────────────
+var ADMIN_IDS = ['i774309'];
 
-const SHOWCASE_TEAMS = Array.from({length: 32}, (_, i) => ({
-  id: 'team-' + (i+1), name: 'Team ' + (i+1), location: null
-}));
-
-const HACKATHON_TEAMS = [
-  {id:'BJ-1', name:'BJ 1', location:'Beijing'},
-  {id:'BJ-2', name:'BJ 2', location:'Beijing'},
-  {id:'BJ-3', name:'BJ 3', location:'Beijing'},
-  {id:'DL-1', name:'DL 1', location:'Dalian'},
-  {id:'DL-2', name:'DL 2', location:'Dalian'},
-  {id:'DL-3', name:'DL 3', location:'Dalian'},
-  {id:'CD-1', name:'CD 1', location:'Chengdu'},
-  {id:'CD-2', name:'CD 2', location:'Chengdu'},
-  {id:'CD-3', name:'CD 3', location:'Chengdu'},
-  {id:'SH-1',  name:'SH 1',  location:'Shanghai'},
-  {id:'SH-2',  name:'SH 2',  location:'Shanghai'},
-  {id:'SH-3',  name:'SH 3',  location:'Shanghai'},
-  {id:'SH-4',  name:'SH 4',  location:'Shanghai'},
-  {id:'SH-5',  name:'SH 5',  location:'Shanghai'},
-  {id:'SH-6',  name:'SH 6',  location:'Shanghai'},
-  {id:'SH-7',  name:'SH 7',  location:'Shanghai'},
-  {id:'SH-8',  name:'SH 8',  location:'Shanghai'},
-  {id:'SH-9',  name:'SH 9',  location:'Shanghai'},
-  {id:'SH-10', name:'SH 10', location:'Shanghai'},
-  {id:'SH-11', name:'SH 11', location:'Shanghai'},
-  {id:'SH-12', name:'SH 12', location:'Shanghai'}
+var SHOWCASE_BLOCKS = [
+  {id:'b1', label:'Block 1', color:'#2356CA', bg:'#eaeefc', range:[1,5]},
+  {id:'b2', label:'Block 2', color:'#188918', bg:'#ebf5eb', range:[6,10]},
+  {id:'b3', label:'Block 3', color:'#c67600', bg:'#fff3e0', range:[11,14]},
+  {id:'b4', label:'Block 4', color:'#bb0000', bg:'#faeaea', range:[15,18]},
+  {id:'b5', label:'Block 5', color:'#6e3b7a', bg:'#f0e8f8', range:[19,22]},
+  {id:'b6', label:'Block 6', color:'#0097a7', bg:'#e0f7fa', range:[23,27]},
+  {id:'b7', label:'Block 7', color:'#805600', bg:'#fdf0d5', range:[28,30]},
+  {id:'b8', label:'Block 8', color:'#2e7d32', bg:'#e8f5e9', range:[31,33]}
 ];
 
-const CHANNELS = {
-  showcase: {
-    label: 'Showcase', teams: SHOWCASE_TEAMS,
-    start: new Date('2000-01-01T00:00:00'),
-    end:   new Date('2099-12-31T23:59:59')
-  },
-  hackathon: {
-    label: 'Hackathon', teams: HACKATHON_TEAMS,
-    start: new Date('2000-01-01T00:00:00'),
-    end:   new Date('2099-12-31T23:59:59')
+function blockOf(n) {
+  for (var i=0;i<SHOWCASE_BLOCKS.length;i++) {
+    var b=SHOWCASE_BLOCKS[i];
+    if (n>=b.range[0]&&n<=b.range[1]) return b;
   }
+}
+
+// teamTopics: {teamId: topicString} — stored inside allVotesData._topics
+var teamTopics = {};
+
+var SHOWCASE_TEAMS = (function() {
+  var arr=[];
+  for (var i=1;i<=33;i++) {
+    var b=blockOf(i);
+    arr.push({id:'team-'+i, name:'Team '+i, location:null, block:b.id, blockLabel:b.label, blockColor:b.color, blockBg:b.bg});
+  }
+  return arr;
+})();
+
+var CITY_META = {
+  Beijing:  {color:'#bb0000', bg:'#faeaea'},
+  Dalian:   {color:'#2356CA', bg:'#eaeefc'},
+  Chengdu:  {color:'#e76500', bg:'#fef3e6'},
+  Shanghai: {color:'#188918', bg:'#ebf5eb'}
 };
 
-const ROLE_WEIGHT = {student: 1, manager: 2};
-const ROLE_LABELS = {student: 'Student', manager: 'Manager/Mentor'};
+var HACKATHON_TEAMS = [
+  {id:'BJ-1',name:'BJ 1',location:'Beijing'},{id:'BJ-2',name:'BJ 2',location:'Beijing'},{id:'BJ-3',name:'BJ 3',location:'Beijing'},
+  {id:'DL-1',name:'DL 1',location:'Dalian'},{id:'DL-2',name:'DL 2',location:'Dalian'},{id:'DL-3',name:'DL 3',location:'Dalian'},
+  {id:'CD-1',name:'CD 1',location:'Chengdu'},{id:'CD-2',name:'CD 2',location:'Chengdu'},{id:'CD-3',name:'CD 3',location:'Chengdu'},
+  {id:'SH-1',name:'SH 1',location:'Shanghai'},{id:'SH-2',name:'SH 2',location:'Shanghai'},
+  {id:'SH-3',name:'SH 3',location:'Shanghai'},{id:'SH-4',name:'SH 4',location:'Shanghai'},
+  {id:'SH-5',name:'SH 5',location:'Shanghai'},{id:'SH-6',name:'SH 6',location:'Shanghai'},
+  {id:'SH-7',name:'SH 7',location:'Shanghai'},{id:'SH-8',name:'SH 8',location:'Shanghai'},
+  {id:'SH-9',name:'SH 9',location:'Shanghai'},{id:'SH-10',name:'SH 10',location:'Shanghai'},
+  {id:'SH-11',name:'SH 11',location:'Shanghai'},{id:'SH-12',name:'SH 12',location:'Shanghai'}
+];
 
-// ==================== STATE ====================
-let user = null;
-let currentChannel = null;
-let currentTab = 'vote';
-let currentLocFilter = 'ALL';
-let currentLocFilterLb = 'ALL';
-let adminChannel = 'showcase';
-let adminLocFilter = 'ALL';
-let allVotesData = {};
-let modalTeamId = null;
-let synced = false;
+var CITY_COLORS = {Beijing:'#bb0000',Dalian:'#2356CA',Chengdu:'#e76500',Shanghai:'#188918'};
 
-// ==================== JSONBIN ====================
-var JB_BASE = 'https://api.jsonbin.io/v3';
+var CHANNELS = {
+  showcase: {label:'Showcase', icon:'🏆', teams:SHOWCASE_TEAMS, start:new Date('2000-01-01'), end:new Date('2099-12-31')},
+  hackathon:{label:'Hackathon',icon:'💻', teams:HACKATHON_TEAMS,start:new Date('2000-01-01'), end:new Date('2099-12-31')}
+};
 
+var ROLE_WEIGHT = {student:1,manager:2};
+var ROLE_LABELS = {student:'Student',manager:'Manager/Mentor'};
+
+// ── STATE ─────────────────────────────────────────────────
+var user=null, currentChannel=null, currentTab='vote';
+var currentLocFilter='ALL';
+var adminChannel='showcase', adminLocFilter='ALL';
+var allVotesData={}, modalTeamId=null, synced=false;
+
+// ── JSONBIN ───────────────────────────────────────────────
 function jbGet() {
-  var binId = window.JSONBIN_BIN_ID;
-  if (!binId) return Promise.resolve(null);
-  return fetch(JB_BASE + '/b/' + binId + '/latest', {
-    headers: {'X-Master-Key': window.JSONBIN_API_KEY, 'X-Bin-Meta': 'false'}
-  }).then(function(r) { return r.ok ? r.json() : null; })
-    .catch(function() { return null; });
+  if (!window.JSONBIN_BIN_ID) return Promise.resolve(null);
+  return fetch('https://api.jsonbin.io/v3/b/'+window.JSONBIN_BIN_ID+'/latest',
+    {headers:{'X-Master-Key':window.JSONBIN_API_KEY,'X-Bin-Meta':'false'}})
+    .then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
 }
-
 function jbPut(data) {
-  var binId = window.JSONBIN_BIN_ID;
-  if (!binId) {
-    return fetch(JB_BASE + '/b', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': window.JSONBIN_API_KEY,
-        'X-Bin-Name': 'sap-ai-day-votes'
-      },
-      body: JSON.stringify(data)
-    }).then(function(r) {
-      if (!r.ok) throw new Error('create bin failed');
-      return r.json();
-    }).then(function(j) {
-      window.JSONBIN_BIN_ID = j.metadata.id;
-      localStorage.setItem('sap_bin_id', j.metadata.id);
-      return j.record;
-    });
+  if (!window.JSONBIN_BIN_ID) {
+    return fetch('https://api.jsonbin.io/v3/b',{method:'POST',
+      headers:{'Content-Type':'application/json','X-Master-Key':window.JSONBIN_API_KEY,'X-Bin-Name':'sap-ai-day-votes'},
+      body:JSON.stringify(data)})
+      .then(function(r){if(!r.ok)throw new Error();return r.json();})
+      .then(function(j){window.JSONBIN_BIN_ID=j.metadata.id;localStorage.setItem('sap_bin_id',j.metadata.id);});
   }
-  return fetch(JB_BASE + '/b/' + binId, {
-    method: 'PUT',
-    headers: {'Content-Type': 'application/json', 'X-Master-Key': window.JSONBIN_API_KEY},
-    body: JSON.stringify(data)
-  }).then(function(r) {
-    if (!r.ok) throw new Error('update bin failed');
-    return r.json();
-  }).then(function(j) { return j.record; });
+  return fetch('https://api.jsonbin.io/v3/b/'+window.JSONBIN_BIN_ID,{method:'PUT',
+    headers:{'Content-Type':'application/json','X-Master-Key':window.JSONBIN_API_KEY},
+    body:JSON.stringify(data)})
+    .then(function(r){if(!r.ok)throw new Error();});
 }
-
-function loadRemoteData() {
+function loadRemote() {
   if (!window.JSONBIN_CONFIGURED) return Promise.resolve();
-  return jbGet().then(function(data) {
-    if (data) { allVotesData = data; synced = true; }
-  }).catch(function(e) { console.warn('JSONBin load failed', e); });
+  return jbGet().then(function(d){if(d){allVotesData=d;synced=true;}}).catch(function(){});
 }
-
-function saveRemoteData() {
+function saveRemote() {
   if (!window.JSONBIN_CONFIGURED) return Promise.resolve();
-  return jbPut(allVotesData).then(function() {
-    synced = true;
-  }).catch(function(e) {
-    synced = false;
-    throw e;
-  });
+  return jbPut(allVotesData).then(function(){synced=true;}).catch(function(e){synced=false;throw e;});
 }
 
-// ==================== LOCAL STORAGE ====================
-function loadLocalData() {
-  var savedBin = localStorage.getItem('sap_bin_id');
-  if (savedBin && !window.JSONBIN_BIN_ID) window.JSONBIN_BIN_ID = savedBin;
-  try {
-    var s = localStorage.getItem('sap_votes');
-    if (s) allVotesData = JSON.parse(s);
-  } catch(e) {}
+// ── LOCAL STORAGE ─────────────────────────────────────────
+function loadLocal() {
+  var sid=localStorage.getItem('sap_bin_id');
+  if(sid&&!window.JSONBIN_BIN_ID) window.JSONBIN_BIN_ID=sid;
+  try{var s=localStorage.getItem('sap_votes');if(s)allVotesData=JSON.parse(s);}catch(e){}
 }
+function saveLocal() { localStorage.setItem('sap_votes',JSON.stringify(allVotesData)); }
 
-function saveLocalData() {
-  localStorage.setItem('sap_votes', JSON.stringify(allVotesData));
-}
-
-// ==================== VOTE SAVE ====================
-function saveVote(channel, sapId, userData, teamId, scores, comment) {
-  if (!allVotesData[channel]) allVotesData[channel] = {};
-  if (!allVotesData[channel][sapId])
-    allVotesData[channel][sapId] = {name: userData.name, role: userData.role, votes: {}};
-  allVotesData[channel][sapId].votes[teamId] = Object.assign({}, scores, {comment: comment});
-  saveLocalData();
-  if (window.JSONBIN_CONFIGURED) return saveRemoteData();
+function persistVote(channel,sapId,userData,teamId,scores,comment) {
+  if(!allVotesData[channel]) allVotesData[channel]={};
+  if(!allVotesData[channel][sapId]) allVotesData[channel][sapId]={name:userData.name,role:userData.role,votes:{}};
+  allVotesData[channel][sapId].votes[teamId]=Object.assign({},scores,{comment:comment});
+  saveLocal();
+  if(window.JSONBIN_CONFIGURED) return saveRemote();
   return Promise.resolve();
 }
 
-// ==================== SCORE CALC ====================
-function calcRawScore(v) {
-  return v.aiInnovation * 0.4 + v.businessImpact * 0.4 + v.presentation * 0.2;
-}
+// ── SCORES ────────────────────────────────────────────────
+function rawScore(v){return v.aiInnovation*0.4+v.businessImpact*0.4+v.presentation*0.2;}
 
-function calcTeamScores(channel) {
-  var votes = allVotesData[channel] || {};
+function teamStats(channel) {
+  var votes=allVotesData[channel]||{};
   return CHANNELS[channel].teams.map(function(team) {
-    var wSum = 0, wTotal = 0, count = 0, aiSum = 0, bizSum = 0, presSum = 0;
-    var comments = [];
-    Object.keys(votes).forEach(function(sid) {
-      var voter = votes[sid];
-      var v = voter.votes && voter.votes[team.id];
-      if (!v) return;
-      var w = ROLE_WEIGHT[voter.role] || 1;
-      wSum += calcRawScore(v) * w; wTotal += w; count++;
-      aiSum += v.aiInnovation; bizSum += v.businessImpact; presSum += v.presentation;
-      if (v.comment && v.comment.trim())
-        comments.push({name: voter.name, role: voter.role, comment: v.comment.trim()});
+    var wSum=0,wTot=0,n=0,aiS=0,bizS=0,presS=0,comments=[];
+    Object.keys(votes).forEach(function(sid){
+      var voter=votes[sid],v=voter.votes&&voter.votes[team.id];
+      if(!v) return;
+      var w=ROLE_WEIGHT[voter.role]||1;
+      wSum+=rawScore(v)*w; wTot+=w; n++;
+      aiS+=v.aiInnovation; bizS+=v.businessImpact; presS+=v.presentation;
+      if(v.comment&&v.comment.trim()) comments.push({name:voter.name,role:voter.role,comment:v.comment.trim()});
     });
-    var score = wTotal > 0 ? wSum / wTotal : 0;
-    var myVote = user && votes[user.sapId] && votes[user.sapId].votes && votes[user.sapId].votes[team.id];
-    return Object.assign({}, team, {
-      score: score, voterCount: count, comments: comments,
-      myVote: myVote || null,
-      avgAI: count > 0 ? aiSum/count : 0,
-      avgBiz: count > 0 ? bizSum/count : 0,
-      avgPres: count > 0 ? presSum/count : 0
+    var myVote=user&&votes[user.sapId]&&votes[user.sapId].votes&&votes[user.sapId].votes[team.id];
+    return Object.assign({},team,{
+      score:wTot>0?wSum/wTot:0, n:n, comments:comments, myVote:myVote||null,
+      avgAI:n>0?aiS/n:0, avgBiz:n>0?bizS/n:0, avgPres:n>0?presS/n:0
     });
   });
 }
 
-// ==================== AUTH ====================
-function isAdmin(sapId) {
-  return ADMIN_IDS.indexOf((sapId || '').toLowerCase()) !== -1;
-}
+// ── AUTH ──────────────────────────────────────────────────
+function isAdmin(id){return ADMIN_IDS.indexOf((id||'').toLowerCase())!==-1;}
 
-function selectRole(role) {
-  user = user || {};
-  user.role = role;
-  document.getElementById('roleStudent').classList.toggle('selected', role === 'student');
-  document.getElementById('roleManager').classList.toggle('selected', role === 'manager');
-  checkEnterBtn();
+function selectRole(r) {
+  user=user||{}; user.role=r;
+  document.getElementById('roleStudent').classList.toggle('selected',r==='student');
+  document.getElementById('roleManager').classList.toggle('selected',r==='manager');
+  checkBtn();
 }
-
-function checkEnterBtn() {
-  var ok = document.getElementById('inputName').value.trim() &&
-           document.getElementById('inputSapId').value.trim() &&
-           user && user.role;
-  document.getElementById('btnEnter').disabled = !ok;
+function checkBtn() {
+  document.getElementById('btnEnter').disabled=
+    !(document.getElementById('inputName').value.trim()&&
+      document.getElementById('inputSapId').value.trim()&&
+      user&&user.role);
 }
-document.getElementById('inputName').addEventListener('input', checkEnterBtn);
-document.getElementById('inputSapId').addEventListener('input', checkEnterBtn);
+document.getElementById('inputName').addEventListener('input',checkBtn);
+document.getElementById('inputSapId').addEventListener('input',checkBtn);
 
 function enterApp() {
-  var name  = document.getElementById('inputName').value.trim();
-  var sapId = document.getElementById('inputSapId').value.trim().toLowerCase();
-  if (!name || !sapId || !user || !user.role) return;
-  user = {name: name, sapId: sapId, role: user.role};
-  sessionStorage.setItem('sap_user', JSON.stringify(user));
-  var btn = document.getElementById('btnEnter');
-  btn.disabled = true; btn.textContent = 'Loading…';
-  loadRemoteData().then(function() {
-    btn.textContent = 'Enter Voting'; btn.disabled = false;
-    showChannelView();
+  var name=document.getElementById('inputName').value.trim();
+  var sapId=document.getElementById('inputSapId').value.trim().toLowerCase();
+  if(!name||!sapId||!user||!user.role) return;
+  user={name:name,sapId:sapId,role:user.role};
+  sessionStorage.setItem('sap_user',JSON.stringify(user));
+  var btn=document.getElementById('btnEnter');
+  btn.disabled=true; btn.textContent='Loading…';
+  loadRemote().then(function(){
+    btn.textContent='Enter Voting'; btn.disabled=false;
+    if(isAdmin(user.sapId)) { goToAdmin(); }
+    else { showChannelView(); }
   });
 }
 
 function logout() {
   sessionStorage.removeItem('sap_user');
-  user = null; currentChannel = null;
+  user=null; currentChannel=null;
   switchView('viewLanding');
-  document.getElementById('headerUser').style.display = 'none';
+  document.getElementById('shellUser').style.display='none';
 }
 
 function restoreSession() {
-  var s = sessionStorage.getItem('sap_user');
-  if (!s) return;
-  user = JSON.parse(s);
-  loadRemoteData().then(showChannelView);
+  var s=sessionStorage.getItem('sap_user');
+  if(!s) return;
+  user=JSON.parse(s);
+  loadRemote().then(function(){
+    if(isAdmin(user.sapId)) { showShellUser(); goToAdmin(); }
+    else showChannelView();
+  });
 }
 
-// ==================== VIEWS ====================
+// ── VIEWS ─────────────────────────────────────────────────
 function switchView(id) {
-  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
   document.getElementById(id).classList.add('active');
 }
 
-function showChannelView() {
-  document.getElementById('headerUser').style.display = 'flex';
-  document.getElementById('headerName').textContent = user.name;
-  var badge = document.getElementById('headerBadge');
-  var adminNav = document.getElementById('btnAdminNav');
-  if (isAdmin(user.sapId)) {
-    badge.textContent = 'Admin';
-    badge.className = 'badge-role badge-admin';
-    adminNav.style.display = 'inline-block';
+function showShellUser() {
+  document.getElementById('shellUser').style.display='flex';
+  document.getElementById('shellName').textContent=user.name;
+  var badge=document.getElementById('shellBadge');
+  var adminNav=document.getElementById('btnAdminNav');
+  if(isAdmin(user.sapId)) {
+    badge.textContent='Admin'; badge.className='badge badge-admin';
+    adminNav.style.display='inline-block';
   } else {
-    badge.textContent = ROLE_LABELS[user.role];
-    badge.className = 'badge-role ' + (user.role === 'student' ? 'badge-student' : 'badge-manager');
-    adminNav.style.display = 'none';
+    badge.textContent=ROLE_LABELS[user.role];
+    badge.className='badge '+(user.role==='student'?'badge-student':'badge-manager');
+    adminNav.style.display='none';
   }
-  document.getElementById('welcomeMsg').textContent = 'Welcome, ' + user.name + '! Please select a voting channel.';
+}
+
+function showChannelView() {
+  showShellUser();
+  document.getElementById('welcomeMsg').textContent='Welcome, '+user.name+'! Select a channel to begin voting.';
   renderChannelCards();
   switchView('viewChannels');
 }
 
-function goBack() {
-  currentChannel = null;
-  showChannelView();
-}
+function goBack() { currentChannel=null; showChannelView(); }
 
 function renderChannelCards() {
-  var now = new Date();
-  var c = document.getElementById('channelCards');
-  c.innerHTML = '';
+  var now=new Date(), c=document.getElementById('channelCards');
+  c.innerHTML='';
   Object.keys(CHANNELS).forEach(function(key) {
-    var ch = CHANNELS[key];
-    var isOpen = now >= ch.start && now <= ch.end;
-    var isUpcoming = now < ch.start;
-    var statusText  = isOpen ? 'Open' : isUpcoming ? 'Coming Soon' : 'Closed';
-    var statusClass = isOpen ? 'open' : isUpcoming ? 'upcoming' : 'closed';
-    var div = document.createElement('div');
-    div.className = 'channel-card' + (isOpen ? '' : ' disabled');
-    if (isOpen) { (function(k){ div.onclick = function(){ enterChannel(k); }; })(key); }
-    div.innerHTML =
-      '<div class="ch-name">' + ch.label + '</div>' +
-      '<div class="ch-meta">' + ch.teams.length + ' teams<br>Open: ' + fmtDate(ch.start) + ' – ' + fmtDate(ch.end) + '</div>' +
-      '<div class="ch-status ' + statusClass + '"><div class="dot"></div>' + statusText + '</div>';
+    var ch=CHANNELS[key];
+    var open=now>=ch.start&&now<=ch.end, upcoming=now<ch.start;
+    var statusText=open?'Open':upcoming?'Coming Soon':'Closed';
+    var statusCls=open?'open':upcoming?'upcoming':'closed';
+    var div=document.createElement('div');
+    div.className='channel-card'+(open?'':' disabled');
+    if(open){(function(k){div.onclick=function(){enterChannel(k);};})(key);}
+    div.innerHTML=
+      '<div class="ch-icon">'+ch.icon+'</div>'+
+      '<div class="ch-name">'+ch.label+'</div>'+
+      '<div class="ch-meta">'+ch.teams.length+' teams &nbsp;·&nbsp; Opens '+fmtDate(ch.start)+' &nbsp;·&nbsp; Closes '+fmtDate(ch.end)+'</div>'+
+      '<div class="ch-pill '+statusCls+'"><div class="ch-pill-dot'+(open?' live':'')+'"></div>'+statusText+'</div>';
     c.appendChild(div);
   });
 }
+function fmtDate(d){return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 
-function fmtDate(d) {
-  return (d.getMonth()+1) + '/' + d.getDate() + ' ' +
-    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-}
-
-function enterChannel(channel) {
-  currentChannel = channel;
-  currentLocFilter = 'ALL';
-  currentLocFilterLb = 'ALL';
-  currentTab = 'vote';
-  document.getElementById('channelLabel').textContent = CHANNELS[channel].label;
+function enterChannel(ch) {
+  currentChannel=ch; currentLocFilter='ALL'; currentTab='vote';
+  document.getElementById('channelLabel').textContent=CHANNELS[ch].label;
+  allVotesData[ch]=allVotesData[ch]||{};
   switchView('viewTeams');
+  buildLocFilter(document.getElementById('locationFilter'),
+    function(){return currentLocFilter;},function(v){currentLocFilter=v;},renderTeams,true);
   switchTab('vote');
-  allVotesData[channel] = allVotesData[channel] || {};
-  renderLocationFilter();
-  renderTeams();
-  renderLeaderboard();
-  updateStatusBar();
+  updateStatusDots();
 }
 
-function updateStatusBar() {
-  var live = window.JSONBIN_CONFIGURED && synced;
-  ['voteDot','lbDot'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (live) el.classList.add('live'); else el.classList.remove('live');
-  });
-  document.getElementById('voteStatusText').textContent = live
-    ? 'Live — synced with all voters'
-    : 'Local mode — data saved in this browser only';
-  document.getElementById('lbStatusText').textContent = live
-    ? 'Live rankings — all voters included'
-    : 'Showing your votes only';
+function updateStatusDots() {
+  var live=window.JSONBIN_CONFIGURED&&synced;
+  var dot=document.getElementById('voteDot');
+  if(live) dot.classList.add('live'); else dot.classList.remove('live');
+  document.getElementById('voteStatusText').textContent=live?'Live — synced with all voters':'Local mode';
 }
 
-// ==================== TABS ====================
+// ── TABS ──────────────────────────────────────────────────
 function switchTab(tab) {
-  currentTab = tab;
-  document.getElementById('tabVote').classList.toggle('active', tab === 'vote');
-  document.getElementById('tabLeaderboard').classList.toggle('active', tab === 'leaderboard');
-  document.getElementById('panelVote').style.display = tab === 'vote' ? 'block' : 'none';
-  document.getElementById('panelLeaderboard').style.display = tab === 'leaderboard' ? 'block' : 'none';
-  if (tab === 'leaderboard') renderLeaderboard();
+  currentTab=tab;
+  document.getElementById('tabVote').classList.toggle('active',tab==='vote');
+  document.getElementById('panelVote').style.display=tab==='vote'?'block':'none';
+  document.getElementById('panelComments').style.display=tab==='comments'?'block':'none';
+  if(tab==='vote') renderTeams();
+  if(tab==='comments') renderCommentsContent();
 }
 
-// ==================== LOCATION FILTER ====================
-function buildLocFilter(containerEl, getVal, setVal, onChangeCb) {
-  var locs = [];
-  if (currentChannel) {
-    var seen = {};
-    CHANNELS[currentChannel].teams.forEach(function(t) {
-      if (t.location && !seen[t.location]) { seen[t.location] = true; locs.push(t.location); }
-    });
+// ── FILTER BAR ────────────────────────────────────────────
+function buildLocFilter(el,getV,setV,cb,cityStyle) {
+  var locs=[],seen={};
+  if(currentChannel) CHANNELS[currentChannel].teams.forEach(function(t){if(t.location&&!seen[t.location]){seen[t.location]=true;locs.push(t.location);}});
+  el.style.display=locs.length?'flex':'none';
+  el.innerHTML='';
+  function mk(label,val){
+    var b=document.createElement('button');
+    var cc=cityStyle&&val!=='ALL'?' city-'+val.toLowerCase():'';
+    b.className='filter-btn'+cc+(getV()===val?' active':'');
+    b.textContent=label;
+    b.onclick=function(){setV(val);el.querySelectorAll('.filter-btn').forEach(function(x){x.classList.remove('active');});b.classList.add('active');cb();};
+    el.appendChild(b);
   }
-  containerEl.style.display = locs.length ? 'flex' : 'none';
-  containerEl.innerHTML = '';
-  function mkBtn(label, val) {
-    var b = document.createElement('button');
-    b.className = 'loc-btn' + (getVal() === val ? ' active' : '');
-    b.textContent = label;
-    b.onclick = function() {
-      setVal(val);
-      containerEl.querySelectorAll('.loc-btn').forEach(function(x){ x.classList.remove('active'); });
-      b.classList.add('active');
-      onChangeCb();
-    };
-    containerEl.appendChild(b);
-  }
-  mkBtn('All', 'ALL');
-  locs.forEach(function(l) { mkBtn(l, l); });
+  mk('All','ALL'); locs.forEach(function(l){mk(l,l);});
 }
 
-function renderLocationFilter() {
-  buildLocFilter(
-    document.getElementById('locationFilter'),
-    function(){ return currentLocFilter; },
-    function(v){ currentLocFilter = v; },
-    renderTeams
-  );
-  buildLocFilter(
-    document.getElementById('locationFilterLb'),
-    function(){ return currentLocFilterLb; },
-    function(v){ currentLocFilterLb = v; },
-    renderLeaderboard
-  );
-}
-
-// ==================== TEAM GRID ====================
+// ── TEAM GRID ─────────────────────────────────────────────
 function renderTeams() {
-  if (!currentChannel) return;
-  var teams = calcTeamScores(currentChannel).filter(function(t) {
-    return currentLocFilter === 'ALL' || t.location === currentLocFilter;
-  });
-  var grid = document.getElementById('teamGrid');
-  grid.innerHTML = '';
-  teams.forEach(function(team) {
-    var div = document.createElement('div');
-    div.className = 'team-card' + (team.myVote ? ' voted' : '');
-    (function(id){ div.onclick = function(){ openModal(id); }; })(team.id);
-    div.innerHTML =
-      (team.myVote ? '<div class="voted-badge">Voted</div>' : '') +
-      '<div class="team-name">' + team.name + '</div>' +
-      '<div class="team-loc">' + (team.location || '') + '</div>' +
-      '<div class="team-score">' + (team.score > 0 ? team.score.toFixed(2) : '–') + '</div>' +
-      '<div class="team-score-label">Weighted Avg</div>' +
-      '<div class="team-voters">' + team.voterCount + ' vote' + (team.voterCount !== 1 ? 's' : '') + '</div>';
-    grid.appendChild(div);
-  });
-}
+  if(!currentChannel) return;
+  var stats=teamStats(currentChannel);
+  var content=document.getElementById('teamContent');
+  content.innerHTML='';
 
-// ==================== LEADERBOARD ====================
-function renderLeaderboard() {
-  if (!currentChannel) return;
-  var sorted = calcTeamScores(currentChannel)
-    .filter(function(t){ return currentLocFilterLb === 'ALL' || t.location === currentLocFilterLb; })
-    .sort(function(a, b){ return b.score - a.score; });
-  var list = document.getElementById('leaderboardList');
-  list.innerHTML = '';
-  if (sorted.every(function(t){ return t.score === 0; })) {
-    list.innerHTML = '<div class="empty-state"><div class="icon">&#128202;</div>No votes yet</div>';
-    return;
+  if(currentChannel==='showcase') {
+    SHOWCASE_BLOCKS.forEach(function(blk) {
+      var teams=stats.filter(function(t){return t.block===blk.id;});
+      var hdr=document.createElement('div');
+      hdr.className='block-header';
+      hdr.innerHTML='<div class="block-dot" style="background:'+blk.dot+'"></div>'+blk.label+
+        ' <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">Teams '+blk.range[0]+'–'+blk.range[1]+'</span>';
+      content.appendChild(hdr);
+      var grid=document.createElement('div');
+      grid.className='team-grid';
+      teams.forEach(function(t){grid.appendChild(makeTeamCard(t));});
+      content.appendChild(grid);
+    });
+  } else {
+    var filtered=currentLocFilter==='ALL'?stats:stats.filter(function(t){return t.location===currentLocFilter;});
+    var grid=document.createElement('div');
+    grid.className='team-grid';
+    filtered.forEach(function(t){grid.appendChild(makeTeamCard(t));});
+    content.appendChild(grid);
   }
-  sorted.forEach(function(team, i) {
-    var rank = i + 1;
-    var rankClass = rank <= 3 ? 'top' + rank : '';
-    var rankLabel = rank === 1 ? '&#129351;' : rank === 2 ? '&#129352;' : rank === 3 ? '&#129353;' : rank;
-    var mv = team.myVote;
-    var div = document.createElement('div');
-    div.className = 'lb-item';
-    (function(id){ div.onclick = function(){ openModal(id); }; })(team.id);
-    div.innerHTML =
-      '<div class="lb-rank ' + rankClass + '">' + rankLabel + '</div>' +
-      '<div class="lb-info">' +
-        '<div class="lb-name">' + team.name + (team.location ? ' <span style="font-size:11px;color:var(--text-dim)">(' + team.location + ')</span>' : '') + '</div>' +
-        '<div class="lb-sub">' + team.voterCount + ' vote' + (team.voterCount!==1?'s':'') + ' · ' + team.comments.length + ' comment' + (team.comments.length!==1?'s':'') + (mv?' · <span style="color:#2ECC71">Voted</span>':'') + '</div>' +
-        (mv ?
-          '<div class="score-bars">' +
-            '<div class="score-bar-row">AI Innovation<div class="bar-track"><div class="bar-fill" style="width:' + mv.aiInnovation*10 + '%"></div></div>' + mv.aiInnovation + '</div>' +
-            '<div class="score-bar-row">Business Impact<div class="bar-track"><div class="bar-fill" style="width:' + mv.businessImpact*10 + '%"></div></div>' + mv.businessImpact + '</div>' +
-            '<div class="score-bar-row">Presentation<div class="bar-track"><div class="bar-fill" style="width:' + mv.presentation*10 + '%"></div></div>' + mv.presentation + '</div>' +
-          '</div>' : '') +
-      '</div>' +
-      '<div class="lb-score-wrap"><div class="lb-score">' + (team.score>0?team.score.toFixed(2):'–') + '</div><div class="lb-score-sub">/ 10</div></div>';
-    list.appendChild(div);
-  });
 }
 
-// ==================== MODAL ====================
+function makeTeamCard(team) {
+  var div=document.createElement('div');
+  div.className='team-card'+(team.myVote?' voted':'');
+  (function(id){div.onclick=function(){openModal(id);};})(team.id);
+  var pipColor='';
+  if(team.location) pipColor=CITY_COLORS[team.location];
+  else if(team.blockDot) pipColor=team.blockDot;
+  div.innerHTML=
+    (team.myVote?'<div class="voted-pip"></div>':'')+
+    '<div class="team-card-name">'+team.name+'</div>'+
+    (pipColor?'<div class="city-pip" style="background:'+pipColor+'"></div>':'');
+  return div;
+}
+
+// ── COMMENTS (voter view — no scores) ─────────────────────
+function renderCommentsContent() {
+  if(!currentChannel) return;
+  var stats=teamStats(currentChannel);
+  if(currentChannel==='hackathon'&&currentLocFilterComments!=='ALL')
+    stats=stats.filter(function(t){return t.location===currentLocFilterComments;});
+
+  var el=document.getElementById('commentsContent');
+  el.innerHTML='';
+
+  // Group by block for showcase
+  if(currentChannel==='showcase') {
+    SHOWCASE_BLOCKS.forEach(function(blk) {
+      var teams=stats.filter(function(t){return t.block===blk.id;});
+      var hasComments=teams.some(function(t){return t.comments.length>0;});
+      if(!hasComments) return;
+      var hdr=document.createElement('div');
+      hdr.className='block-header';
+      hdr.innerHTML='<div class="block-dot" style="background:'+blk.dot+'"></div>'+blk.label;
+      el.appendChild(hdr);
+      teams.forEach(function(t){if(t.comments.length) el.appendChild(makeCommentsBlock(t));});
+    });
+  } else {
+    stats.forEach(function(t){if(t.comments.length) el.appendChild(makeCommentsBlock(t));});
+  }
+
+  if(el.innerHTML==='') {
+    el.innerHTML='<div class="empty"><div class="empty-icon">💬</div>No comments yet</div>';
+  }
+}
+
+function makeCommentsBlock(team) {
+  var wrap=document.createElement('div');
+  wrap.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:hidden;';
+  var dotColor=team.location?CITY_COLORS[team.location]:(team.blockDot||'var(--text3)');
+  wrap.innerHTML=
+    '<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">'+
+      '<div style="width:8px;height:8px;border-radius:50%;background:'+dotColor+';flex-shrink:0;"></div>'+
+      '<span style="font-weight:600;font-size:14px">'+team.name+'</span>'+
+      (team.location?'<span class="city-tag '+team.location+'">'+team.location+'</span>':'')+
+      '<span style="font-size:12px;color:var(--text3);margin-left:auto">'+team.comments.length+' comment'+(team.comments.length!==1?'s':'')+'</span>'+
+    '</div>'+
+    '<div style="padding:12px 16px;">'+
+      team.comments.map(function(c){
+        return '<div class="comment-item">'+
+          '<div class="comment-meta">'+
+            '<span style="font-weight:600;color:var(--text)">'+esc(c.name)+'</span>'+
+            '<span class="badge '+(c.role==='student'?'badge-student':'badge-manager')+'">'+ROLE_LABELS[c.role]+'</span>'+
+          '</div>'+
+          '<div class="comment-text">'+esc(c.comment)+'</div>'+
+        '</div>';
+      }).join('')+
+    '</div>';
+  return wrap;
+}
+
+// ── MODAL ─────────────────────────────────────────────────
 function openModal(teamId) {
-  var team = null;
-  CHANNELS[currentChannel].teams.forEach(function(t){ if (t.id === teamId) team = t; });
-  if (!team) return;
-  modalTeamId = teamId;
-  var chVotes = allVotesData[currentChannel] || {};
-  var myVote = chVotes[user.sapId] && chVotes[user.sapId].votes && chVotes[user.sapId].votes[teamId];
-  document.getElementById('modalTeamName').textContent = team.name;
-  document.getElementById('modalTeamSub').textContent = team.location ? team.location + ' · ' + CHANNELS[currentChannel].label : CHANNELS[currentChannel].label;
-  document.getElementById('sliderAI').value  = myVote ? myVote.aiInnovation  : 5;
-  document.getElementById('sliderBiz').value = myVote ? myVote.businessImpact : 5;
-  document.getElementById('sliderPres').value = myVote ? myVote.presentation  : 5;
-  document.getElementById('inputComment').value = (myVote && myVote.comment) ? myVote.comment : '';
-  document.getElementById('btnSubmit').textContent = myVote ? 'Update Score' : 'Submit Score';
-  updatePreview();
-  renderModalComments(teamId);
+  var team=null;
+  CHANNELS[currentChannel].teams.forEach(function(t){if(t.id===teamId) team=t;});
+  if(!team) return;
+  modalTeamId=teamId;
+  var chV=allVotesData[currentChannel]||{};
+  var mv=chV[user.sapId]&&chV[user.sapId].votes&&chV[user.sapId].votes[teamId];
+  document.getElementById('modalTeamName').textContent=team.name;
+  document.getElementById('modalTeamSub').textContent=
+    team.location?team.location+' · '+CHANNELS[currentChannel].label:
+    (team.blockLabel?team.blockLabel+' · '+CHANNELS[currentChannel].label:CHANNELS[currentChannel].label);
+  document.getElementById('sliderAI').value=mv?mv.aiInnovation:5;
+  document.getElementById('sliderBiz').value=mv?mv.businessImpact:5;
+  document.getElementById('sliderPres').value=mv?mv.presentation:5;
+  document.getElementById('inputComment').value=mv&&mv.comment?mv.comment:'';
+  document.getElementById('btnSubmit').textContent=mv?'Update Score':'Submit Score';
+  updateSliders();
+  // Only admins see comments in the modal
+  var commentsSection = document.getElementById('modalCommentsSection');
+  if (isAdmin(user.sapId)) {
+    commentsSection.style.display = 'block';
+    renderModalComments(teamId);
+  } else {
+    commentsSection.style.display = 'none';
+  }
   document.getElementById('modalOverlay').classList.remove('hidden');
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow='hidden';
 }
+function closeModal(){document.getElementById('modalOverlay').classList.add('hidden');document.body.style.overflow='';modalTeamId=null;}
+function closeModalOnOverlay(e){if(e.target===document.getElementById('modalOverlay')) closeModal();}
 
-function closeModal() {
-  document.getElementById('modalOverlay').classList.add('hidden');
-  document.body.style.overflow = '';
-  modalTeamId = null;
-}
-
-function closeModalOnOverlay(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-}
-
-function updatePreview() {
-  var ai   = +document.getElementById('sliderAI').value;
-  var biz  = +document.getElementById('sliderBiz').value;
-  var pres = +document.getElementById('sliderPres').value;
-  document.getElementById('valAI').textContent   = ai;
-  document.getElementById('valBiz').textContent  = biz;
-  document.getElementById('valPres').textContent = pres;
-  var total = ai * 0.4 + biz * 0.4 + pres * 0.2;
-  document.getElementById('previewTotal').textContent = total.toFixed(1);
-  document.getElementById('previewBreakdown').innerHTML =
-    'AI Innovation: ' + ai + ' × 40% = ' + (ai*0.4).toFixed(1) + '<br>' +
-    'Business Impact: ' + biz + ' × 40% = ' + (biz*0.4).toFixed(1) + '<br>' +
-    'Presentation: ' + pres + ' × 20% = ' + (pres*0.2).toFixed(1);
+function updateSliders() {
+  var ai=+document.getElementById('sliderAI').value;
+  var biz=+document.getElementById('sliderBiz').value;
+  var pres=+document.getElementById('sliderPres').value;
+  document.getElementById('valAI').textContent=ai;
+  document.getElementById('valBiz').textContent=biz;
+  document.getElementById('valPres').textContent=pres;
 }
 
 function renderModalComments(teamId) {
-  var votes = allVotesData[currentChannel] || {};
-  var comments = [];
-  Object.keys(votes).forEach(function(sid) {
-    var voter = votes[sid];
-    var v = voter.votes && voter.votes[teamId];
-    if (v && v.comment && v.comment.trim())
-      comments.push({name: voter.name, role: voter.role, comment: v.comment.trim()});
+  var votes=allVotesData[currentChannel]||{};
+  var comments=[];
+  Object.keys(votes).forEach(function(sid){
+    var voter=votes[sid],v=voter.votes&&voter.votes[teamId];
+    if(v&&v.comment&&v.comment.trim()) comments.push({name:voter.name,role:voter.role,comment:v.comment.trim()});
   });
-  document.getElementById('commentsList').innerHTML = comments.length
-    ? comments.map(function(c) {
-        return '<div class="comment-item">' +
-          '<div class="comment-meta"><span>' + escHtml(c.name) + '</span>' +
-          '<span class="badge-role ' + (c.role==='student'?'badge-student':'badge-manager') + '" style="font-size:10px;padding:2px 7px">' + ROLE_LABELS[c.role] + '</span></div>' +
-          '<div class="comment-text">' + escHtml(c.comment) + '</div></div>';
-      }).join('')
-    : '<div class="no-comments">No comments yet</div>';
+  document.getElementById('modalCommentsList').innerHTML=comments.length
+    ?comments.map(function(c){
+      return '<div class="comment-item">'+
+        '<div class="comment-meta">'+
+          '<span style="font-weight:600;color:var(--text)">'+esc(c.name)+'</span>'+
+          '<span class="badge '+(c.role==='student'?'badge-student':'badge-manager')+'">'+ROLE_LABELS[c.role]+'</span>'+
+        '</div>'+
+        '<div class="comment-text">'+esc(c.comment)+'</div></div>';
+    }).join('')
+    :'<div class="no-comments">No comments yet</div>';
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 function submitVote() {
-  var teamId = modalTeamId;
-  if (!teamId) return;
-  var ai   = +document.getElementById('sliderAI').value;
-  var biz  = +document.getElementById('sliderBiz').value;
-  var pres = +document.getElementById('sliderPres').value;
-  var comment = document.getElementById('inputComment').value.trim();
-  var btn = document.getElementById('btnSubmit');
-  btn.disabled = true; btn.textContent = 'Submitting…';
-  saveVote(currentChannel, user.sapId, user, teamId, {aiInnovation:ai, businessImpact:biz, presentation:pres}, comment)
-    .then(function() {
-      showToast('Score submitted!', 'success');
-      btn.textContent = 'Update Score';
+  var teamId=modalTeamId; if(!teamId) return;
+  var ai=+document.getElementById('sliderAI').value;
+  var biz=+document.getElementById('sliderBiz').value;
+  var pres=+document.getElementById('sliderPres').value;
+  var comment=document.getElementById('inputComment').value.trim();
+  var btn=document.getElementById('btnSubmit');
+  btn.disabled=true; btn.textContent='Saving…';
+  persistVote(currentChannel,user.sapId,user,teamId,{aiInnovation:ai,businessImpact:biz,presentation:pres},comment)
+    .then(function(){
+      showToast('Score saved','success');
+      btn.textContent='Update Score';
       renderModalComments(teamId);
       renderTeams();
-      renderLeaderboard();
-      updateStatusBar();
+      updateStatusDots();
     })
-    .catch(function() {
-      showToast('Saved locally (sync failed)', 'error');
-      btn.textContent = 'Update Score';
+    .catch(function(){
+      showToast('Saved locally','error');
+      btn.textContent='Update Score';
       renderModalComments(teamId);
       renderTeams();
-      renderLeaderboard();
     })
-    .finally(function() { btn.disabled = false; });
+    .finally(function(){btn.disabled=false;});
 }
 
-// ==================== ADMIN ====================
+// ── ADMIN ─────────────────────────────────────────────────
 function goToAdmin() {
-  if (!isAdmin(user && user.sapId)) return;
+  showShellUser();
   adminRefresh();
   switchView('viewAdmin');
 }
 
 function adminRefresh() {
-  var btn = document.querySelector('.refresh-btn');
-  if (btn) { btn.textContent = '⏳ Loading…'; btn.disabled = true; }
-  loadRemoteData().then(function() {
+  var btn=document.getElementById('adminRefreshBtn');
+  btn.textContent='Loading…'; btn.disabled=true;
+  loadRemote().then(function(){
     renderAdminStats();
     renderAdminLeaderboard();
     renderAdminVoters();
-    if (btn) { btn.textContent = '蘵 Refresh'; btn.disabled = false; }
+    renderAdminTopics();
+    btn.textContent='↻ Refresh'; btn.disabled=false;
   });
 }
 
 function adminSwitchChannel(ch) {
-  adminChannel = ch;
-  adminLocFilter = 'ALL';
-  document.getElementById('adminTabShowcase').classList.toggle('active', ch === 'showcase');
-  document.getElementById('adminTabHackathon').classList.toggle('active', ch === 'hackathon');
+  adminChannel=ch; adminLocFilter='ALL';
+  document.getElementById('adminTabShowcase').classList.toggle('active',ch==='showcase');
+  document.getElementById('adminTabHackathon').classList.toggle('active',ch==='hackathon');
   renderAdminLocFilter();
   renderAdminLeaderboard();
   renderAdminVoters();
 }
 
 function renderAdminLocFilter() {
-  var locs = [];
-  var seen = {};
-  CHANNELS[adminChannel].teams.forEach(function(t) {
-    if (t.location && !seen[t.location]) { seen[t.location] = true; locs.push(t.location); }
-  });
-  var el = document.getElementById('adminLocFilter');
-  el.style.display = locs.length ? 'flex' : 'none';
-  el.innerHTML = '';
-  function mkBtn(label, val) {
-    var b = document.createElement('button');
-    b.className = 'loc-btn' + (adminLocFilter === val ? ' active' : '');
-    b.textContent = label;
-    b.onclick = function() {
-      adminLocFilter = val;
-      el.querySelectorAll('.loc-btn').forEach(function(x){ x.classList.remove('active'); });
-      b.classList.add('active');
-      renderAdminLeaderboard();
-    };
+  var locs=[],seen={};
+  CHANNELS[adminChannel].teams.forEach(function(t){if(t.location&&!seen[t.location]){seen[t.location]=true;locs.push(t.location);}});
+  var el=document.getElementById('adminLocFilter');
+  el.style.display=locs.length?'flex':'none';
+  el.innerHTML='';
+  function mk(label,val){
+    var b=document.createElement('button');
+    b.className='filter-btn'+(val!=='ALL'?' city-'+val.toLowerCase():'')+(adminLocFilter===val?' active':'');
+    b.textContent=label;
+    b.onclick=function(){adminLocFilter=val;el.querySelectorAll('.filter-btn').forEach(function(x){x.classList.remove('active');});b.classList.add('active');renderAdminLeaderboard();};
     el.appendChild(b);
   }
-  mkBtn('All', 'ALL');
-  locs.forEach(function(l) { mkBtn(l, l); });
+  mk('All','ALL'); locs.forEach(function(l){mk(l,l);});
 }
 
 function renderAdminStats() {
-  var allSapIds = {};
-  ['showcase','hackathon'].forEach(function(ch) {
-    Object.keys(allVotesData[ch] || {}).forEach(function(id) { allSapIds[id] = true; });
-  });
-  var totalVoters = Object.keys(allSapIds).length;
-  var scVoters = Object.keys(allVotesData.showcase || {}).length;
-  var hkVoters = Object.keys(allVotesData.hackathon || {}).length;
-  var allVoters = Object.values(allVotesData.showcase || {}).concat(Object.values(allVotesData.hackathon || {}));
-  var managers = allVoters.filter(function(v){ return v.role === 'manager'; }).length;
-
-  document.getElementById('adminStats').innerHTML =
-    '<div class="stat-card"><div class="stat-val">' + totalVoters + '</div><div class="stat-label">Total Voters</div></div>' +
-    '<div class="stat-card"><div class="stat-val">' + scVoters + '</div><div class="stat-label">Showcase Voters</div></div>' +
-    '<div class="stat-card"><div class="stat-val">' + hkVoters + '</div><div class="stat-label">Hackathon Voters</div></div>' +
-    '<div class="stat-card"><div class="stat-val">' + managers + '</div><div class="stat-label">Managers / Mentors</div></div>' +
-    '<div class="stat-card"><div class="stat-val">' + (totalVoters - managers) + '</div><div class="stat-label">Students</div></div>' +
-    '<div class="stat-card" style="border-color:' + (synced?'rgba(46,204,113,0.4)':'var(--border)') + '">' +
-      '<div class="stat-val" style="font-size:18px;color:' + (synced?'#2ECC71':'var(--text-dim)') + '">' + (synced?'Live':'Local') + '</div>' +
-      '<div class="stat-label">Data Source</div></div>';
+  var allIds={};
+  ['showcase','hackathon'].forEach(function(ch){Object.keys(allVotesData[ch]||{}).forEach(function(id){allIds[id]=true;});});
+  var total=Object.keys(allIds).length;
+  var scV=Object.keys(allVotesData.showcase||{}).length;
+  var hkV=Object.keys(allVotesData.hackathon||{}).length;
+  var allV=Object.values(allVotesData.showcase||{}).concat(Object.values(allVotesData.hackathon||{}));
+  var mgrs=allV.filter(function(v){return v.role==='manager';}).length;
+  function sc(val,label,extra){return '<div class="stat-card'+(extra?' '+extra:'')+'"><div class="stat-val">'+val+'</div><div class="stat-label">'+label+'</div></div>';}
+  document.getElementById('adminStats').innerHTML=
+    sc(total,'Total Voters')+sc(scV,'Showcase Voters')+sc(hkV,'Hackathon Voters')+
+    sc(mgrs,'Managers / Mentors')+sc(total-mgrs,'Students')+
+    sc(synced?'Live':'Local','Data Source',synced?'live':'');
 }
 
 function renderAdminLeaderboard() {
   renderAdminLocFilter();
-  var teams = calcTeamScores(adminChannel)
-    .filter(function(t){ return adminLocFilter === 'ALL' || t.location === adminLocFilter; })
-    .sort(function(a,b){ return b.score - a.score; });
+  var stats=teamStats(adminChannel)
+    .filter(function(t){return adminLocFilter==='ALL'||t.location===adminLocFilter;})
+    .sort(function(a,b){return b.score-a.score;});
 
-  var list = document.getElementById('adminLeaderboard');
-  list.innerHTML = '';
-  if (teams.every(function(t){ return t.score === 0; })) {
-    list.innerHTML = '<div class="empty-state"><div class="icon">&#128202;</div>No votes yet</div>';
-    return;
+  var el=document.getElementById('adminLeaderboard');
+  if(stats.every(function(t){return t.score===0;})){
+    el.innerHTML='<div class="empty"><div class="empty-icon">📊</div>No votes yet</div>'; return;
   }
-  teams.forEach(function(team, i) {
-    var rank = i + 1;
-    var rankClass = rank <= 3 ? 'top' + rank : '';
-    var rankLabel = rank === 1 ? '&#129351;' : rank === 2 ? '&#129352;' : rank === 3 ? '&#129353;' : '#' + rank;
-    var div = document.createElement('div');
-    div.className = 'admin-lb-item';
-    div.innerHTML =
-      '<div class="lb-rank ' + rankClass + '" style="font-size:16px">' + rankLabel + '</div>' +
-      '<div>' +
-        '<div style="font-weight:700">' + team.name + (team.location ? ' <span style="font-size:11px;color:var(--text-dim)">(' + team.location + ')</span>' : '') + '</div>' +
-        '<div style="font-size:12px;color:var(--text-dim)">' + team.voterCount + ' voter' + (team.voterCount!==1?'s':'') + ' · ' + team.comments.length + ' comment' + (team.comments.length!==1?'s':'') + '</div>' +
-        '<div style="font-size:11px;color:var(--text-dim);margin-top:2px">AI: ' + team.avgAI.toFixed(1) + ' · Biz: ' + team.avgBiz.toFixed(1) + ' · Pres: ' + team.avgPres.toFixed(1) + '</div>' +
-      '</div>' +
-      '<div style="text-align:right"><div style="font-size:22px;font-weight:800;color:var(--gold)">' + team.score.toFixed(2) + '</div><div style="font-size:11px;color:var(--text-dim)">/ 10</div></div>';
-    list.appendChild(div);
-  });
+
+  var rows=stats.map(function(team,i){
+    var rank=i+1;
+    var rc=rank===1?'top1':rank===2?'top2':rank===3?'top3':'';
+    var rl=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
+    var accentColor=team.location?CITY_COLORS[team.location]:(team.blockDot||'var(--blue)');
+    var nameExtra=team.location
+      ?'<span class="city-tag '+team.location+'" style="margin-left:6px">'+team.location+'</span>'
+      :(team.blockLabel?'<span style="font-size:11px;color:var(--text3);margin-left:6px">'+team.blockLabel+'</span>':'');
+    return '<tr>'+
+      '<td><span class="lb-rank-num '+rc+'">'+rl+'</span></td>'+
+      '<td>'+
+        '<strong>'+team.name+'</strong>'+nameExtra+'<br>'+
+        '<span class="sub-scores">'+
+          'AI <span class="inline-bar"><span class="inline-bar-fill" style="width:'+team.avgAI*10+'%"></span></span> '+team.avgAI.toFixed(1)+
+          ' &nbsp; Biz <span class="inline-bar"><span class="inline-bar-fill" style="width:'+team.avgBiz*10+'%"></span></span> '+team.avgBiz.toFixed(1)+
+          ' &nbsp; Pres <span class="inline-bar"><span class="inline-bar-fill" style="width:'+team.avgPres*10+'%"></span></span> '+team.avgPres.toFixed(1)+
+        '</span>'+
+      '</td>'+
+      '<td style="color:var(--text3);font-size:12px">'+team.n+' vote'+(team.n!==1?'s':'')+'</td>'+
+      '<td><span class="lb-score-big">'+team.score.toFixed(2)+'</span><span style="font-size:12px;color:var(--text3)"> / 10</span></td>'+
+    '</tr>';
+  }).join('');
+
+  el.innerHTML='<table class="lb-table"><thead><tr><th style="width:48px">Rank</th><th>Team</th><th>Voters</th><th>Score</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 
 function renderAdminVoters() {
-  var votes = allVotesData[adminChannel] || {};
-  var list = document.getElementById('adminVoterList');
-  if (Object.keys(votes).length === 0) {
-    list.innerHTML = '<div class="empty-state"><div class="icon">&#128101;</div>No voters yet</div>';
-    return;
+  var votes=allVotesData[adminChannel]||{};
+  var el=document.getElementById('adminVoterList');
+  if(!Object.keys(votes).length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">&#128101;</div>No voters yet</div>'; return;
   }
-  list.innerHTML = '';
-  Object.keys(votes).forEach(function(sapId) {
-    var voter = votes[sapId];
-    var votedKeys = Object.keys(voter.votes || {});
-    var totalTeams = CHANNELS[adminChannel].teams.length;
-    var avgScore = votedKeys.length > 0
-      ? votedKeys.reduce(function(s, tid){ return s + calcRawScore(voter.votes[tid]); }, 0) / votedKeys.length
-      : 0;
-    var uid = 'voter-' + sapId.replace(/\W/g,'_');
-    var detailHtml = votedKeys.map(function(tid) {
-      var v = voter.votes[tid];
-      var team = null;
-      CHANNELS[adminChannel].teams.forEach(function(t){ if(t.id===tid) team=t; });
-      return '<strong>' + (team ? team.name : tid) + '</strong>: AI ' + v.aiInnovation + ' · Biz ' + v.businessImpact + ' · Pres ' + v.presentation + ' → <strong>' + calcRawScore(v).toFixed(1) + '</strong>' + (v.comment ? ' — “' + escHtml(v.comment) + '”' : '');
-    }).join('<br>');
-    var row = document.createElement('div');
-    row.className = 'voter-row';
-    row.innerHTML =
-      '<span class="voter-name">' + escHtml(voter.name) + '</span>' +
-      '<span style="font-size:12px;color:var(--text-dim)">' + sapId + '</span>' +
-      '<span class="badge-role ' + (voter.role==='student'?'badge-student':'badge-manager') + '" style="font-size:10px;padding:2px 8px">' + ROLE_LABELS[voter.role] + '</span>' +
-      '<span style="font-size:12px;color:var(--text-dim)">' + votedKeys.length + '/' + totalTeams + ' teams</span>' +
-      '<span class="voter-score">' + avgScore.toFixed(2) + ' avg</span>' +
-      '<button class="detail-toggle" onclick="toggleVoterDetail(\'' + uid + '\')">Details &#9662;</button>' +
-      '<div class="voter-detail" id="' + uid + '">' + detailHtml + '</div>';
-    list.appendChild(row);
+  var rows=Object.keys(votes).map(function(sapId){
+    var voter=votes[sapId];
+    var vkeys=Object.keys(voter.votes||{});
+    var avg=vkeys.length>0?vkeys.reduce(function(s,tid){return s+rawScore(voter.votes[tid]);},0)/vkeys.length:0;
+    var uid='vd-'+sapId.replace(/\W/g,'_');
+    var euid='ed-'+sapId.replace(/\W/g,'_');
+    var detailRows=vkeys.map(function(tid){
+      var v=voter.votes[tid],team=null;
+      CHANNELS[adminChannel].teams.forEach(function(t){if(t.id===tid) team=t;});
+      var tname=team?team.name:tid;
+      var duid='drow-'+sapId.replace(/\W/g,'_')+'-'+tid.replace(/\W/g,'_');
+      return '<div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:6px;">'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'+
+          '<strong style="flex:1">'+esc(tname)+'</strong>'+
+          '<span style="font-size:12px;color:var(--text2)">AI:'+v.aiInnovation+' Biz:'+v.businessImpact+' Pres:'+v.presentation+' &#8594; '+rawScore(v).toFixed(1)+'</span>'+
+          '<button class="btn btn-edit" onclick="adminToggleVoteEdit(''+duid+'')">Edit</button>'+
+          '<button class="btn btn-danger" onclick="adminDeleteVote(''+sapId+'',''+tid+'')">Delete</button>'+
+        '</div>'+
+        (v.comment?'<div style="font-size:12px;color:var(--text2);margin-top:4px">'+esc(v.comment)+'</div>':'')+
+        '<div class="inline-edit-form" id="'+duid+'">'+
+          '<div class="inline-edit-row"><label>AI (1-10)</label><input class="inline-edit-input" id="'+duid+'-ai" type="number" min="1" max="10" value="'+v.aiInnovation+'"></div>'+
+          '<div class="inline-edit-row"><label>Biz (1-10)</label><input class="inline-edit-input" id="'+duid+'-biz" type="number" min="1" max="10" value="'+v.businessImpact+'"></div>'+
+          '<div class="inline-edit-row"><label>Pres (1-10)</label><input class="inline-edit-input" id="'+duid+'-pres" type="number" min="1" max="10" value="'+v.presentation+'"></div>'+
+          '<div class="inline-edit-row"><label>Comment</label><input class="inline-edit-input" id="'+duid+'-comment" type="text" value="'+esc(v.comment||'')+'"></div>'+
+          '<div class="inline-edit-actions">'+
+            '<button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="adminSaveVote(''+sapId+'',''+tid+'',''+duid+'')">Save</button>'+
+            '<button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="adminToggleVoteEdit(''+duid+'')">Cancel</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    return '<tr>'+
+      '<td>'+
+        '<strong>'+esc(voter.name)+'</strong>'+
+        '<div class="inline-edit-form" id="'+euid+'" style="margin-top:6px">'+
+          '<div class="inline-edit-row"><label>Name</label><input class="inline-edit-input" id="'+euid+'-name" type="text" value="'+esc(voter.name)+'"></div>'+
+          '<div class="inline-edit-row"><label>Role</label>'+
+            '<select class="inline-edit-input" id="'+euid+'-role">'+
+              '<option value="student"'+(voter.role==='student'?' selected':'')+'>Student</option>'+
+              '<option value="manager"'+(voter.role==='manager'?' selected':'')+'>Manager/Mentor</option>'+
+            '</select>'+
+          '</div>'+
+          '<div class="inline-edit-actions">'+
+            '<button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="adminSaveVoterInfo(''+sapId+'',''+euid+'')">Save</button>'+
+            '<button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="adminToggleVoteEdit(''+euid+'')">Cancel</button>'+
+          '</div>'+
+        '</div>'+
+      '</td>'+
+      '<td style="color:var(--text2)">'+sapId+'</td>'+
+      '<td><span class="badge '+(voter.role==='student'?'badge-student':'badge-manager')+'">'+ROLE_LABELS[voter.role]+'</span></td>'+
+      '<td style="color:var(--text2);font-size:12px">'+vkeys.length+' / '+CHANNELS[adminChannel].teams.length+' teams</td>'+
+      '<td><strong style="color:var(--blue)">'+avg.toFixed(2)+'</strong></td>'+
+      '<td style="white-space:nowrap">'+
+        '<button class="expand-btn" style="margin-right:4px" onclick="toggleDetail(''+uid+'')">Scores</button>'+
+        '<button class="btn btn-edit" style="font-size:11px;padding:3px 8px;margin-right:4px" onclick="adminToggleVoteEdit(''+euid+'')">Edit</button>'+
+        '<button class="btn btn-danger" style="font-size:11px;padding:3px 8px" onclick="adminDeleteVoter(''+sapId+'')">Delete</button>'+
+      '</td>'+
+    '</tr>'+
+    '<tr class="voter-detail-row" id="'+uid+'"><td colspan="6"><div style="padding:4px 0">'+detailRows+'</div></td></tr>';
+  }).join('');
+  el.innerHTML='<table class="voter-table"><thead><tr><th>Name</th><th>SAP ID</th><th>Role</th><th>Progress</th><th>Avg Score</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+function toggleDetail(id){var el=document.getElementById(id);el.style.display=el.style.display==='table-row'?'none':'table-row';}
+function adminToggleVoteEdit(uid){var el=document.getElementById(uid);el.classList.toggle('open');}
+
+function adminSaveVote(sapId,teamId,duid){
+  var ai=Math.min(10,Math.max(1,+document.getElementById(duid+'-ai').value||5));
+  var biz=Math.min(10,Math.max(1,+document.getElementById(duid+'-biz').value||5));
+  var pres=Math.min(10,Math.max(1,+document.getElementById(duid+'-pres').value||5));
+  var comment=document.getElementById(duid+'-comment').value.trim();
+  if(!allVotesData[adminChannel]||!allVotesData[adminChannel][sapId]) return;
+  allVotesData[adminChannel][sapId].votes[teamId]={aiInnovation:ai,businessImpact:biz,presentation:pres,comment:comment};
+  saveLocal();
+  if(window.JSONBIN_CONFIGURED) saveRemote().catch(function(){});
+  showToast('Vote updated','success');
+  renderAdminVoters(); renderAdminLeaderboard(); renderAdminStats();
+}
+function adminDeleteVote(sapId,teamId){
+  if(!confirm('Delete this vote?')) return;
+  if(!allVotesData[adminChannel]||!allVotesData[adminChannel][sapId]) return;
+  delete allVotesData[adminChannel][sapId].votes[teamId];
+  saveLocal();
+  if(window.JSONBIN_CONFIGURED) saveRemote().catch(function(){});
+  showToast('Vote deleted','success');
+  renderAdminVoters(); renderAdminLeaderboard(); renderAdminStats();
+}
+function adminDeleteVoter(sapId){
+  if(!confirm('Delete ALL votes from '+sapId+'?')) return;
+  if(!allVotesData[adminChannel]) return;
+  delete allVotesData[adminChannel][sapId];
+  saveLocal();
+  if(window.JSONBIN_CONFIGURED) saveRemote().catch(function(){});
+  showToast('Voter deleted','success');
+  renderAdminVoters(); renderAdminLeaderboard(); renderAdminStats();
+}
+function adminSaveVoterInfo(sapId,euid){
+  var name=document.getElementById(euid+'-name').value.trim();
+  var role=document.getElementById(euid+'-role').value;
+  if(!name) return;
+  if(!allVotesData[adminChannel]||!allVotesData[adminChannel][sapId]) return;
+  allVotesData[adminChannel][sapId].name=name;
+  allVotesData[adminChannel][sapId].role=role;
+  saveLocal();
+  if(window.JSONBIN_CONFIGURED) saveRemote().catch(function(){});
+  showToast('Voter info updated','success');
+  renderAdminVoters(); renderAdminStats();
+}
+
+// ── TOPICS EDITOR ──────────────────────────────────────────
+function renderAdminTopics() {
+  var el=document.getElementById('adminTopicsGrid');
+  if(!el) return;
+  el.innerHTML='';
+  SHOWCASE_TEAMS.forEach(function(team) {
+    var blk=SHOWCASE_BLOCKS.filter(function(b){return b.id===team.block;})[0];
+    var tid=team.id.replace(/\W/g,'_');
+    var topic=teamTopics[team.id]||'';
+    var div=document.createElement('div');
+    div.className='topic-item';
+    div.innerHTML=
+      '<div class="topic-item-header">'+
+        '<span class="topic-item-name">'+team.name+'</span>'+
+        '<span style="font-size:11px;font-weight:700;background:'+blk.bg+';color:'+blk.color+';padding:2px 7px;border-radius:8px">'+blk.label+'</span>'+
+      '</div>'+
+      '<div class="topic-current" id="tc-'+tid+'" style="min-height:16px">'+
+        (topic?esc(topic):'<span style=\'color:var(--text3);font-style:italic\'>No topic set</span>')+
+      '</div>'+
+      '<div class="topic-edit-row" id="ter-'+tid+'">'+
+        '<input class="topic-edit-input" id="ti-'+tid+'" type="text" placeholder="Enter topic..." value="'+esc(topic)+'">'+
+        '<button class="btn btn-primary" style="font-size:12px;padding:5px 10px;white-space:nowrap" onclick="adminSaveTopic(''+team.id+'',''+tid+'')">Save</button>'+
+        '<button class="btn btn-secondary" style="font-size:12px;padding:5px 10px" onclick="adminToggleTopic(''+tid+'')">&#x2715;</button>'+
+      '</div>'+
+      '<button class="btn btn-edit" style="margin-top:6px;font-size:11px;padding:3px 8px" onclick="adminToggleTopic(''+tid+'')">'+
+        (topic?'Edit topic':'+ Add topic')+
+      '</button>';
+    el.appendChild(div);
   });
 }
-
-function toggleVoterDetail(id) {
-  var el = document.getElementById(id);
-  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+function adminToggleTopic(tid){document.getElementById('ter-'+tid).classList.toggle('open');}
+function adminSaveTopic(teamId,tid){
+  var val=document.getElementById('ti-'+tid).value.trim();
+  if(val) teamTopics[teamId]=val; else delete teamTopics[teamId];
+  saveLocal();
+  if(window.JSONBIN_CONFIGURED) saveRemote().catch(function(){});
+  showToast('Topic saved','success');
+  renderAdminTopics();
+  if(currentChannel==='showcase') renderTeams();
 }
 
-// ==================== TOAST ====================
-function showToast(msg, type) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast ' + (type||'') + ' show';
+// ── TOAST ─────────────────────────────────────────────────
+function showToast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+(type||'')+' show';
   clearTimeout(t._timer);
-  t._timer = setTimeout(function(){ t.className = 'toast ' + (type||''); }, 2800);
+  t._timer=setTimeout(function(){t.className='toast '+(type||'');},2500);
 }
 
-// ==================== INIT ====================
-if (!window.JSONBIN_CONFIGURED)
-  document.getElementById('setupNotice').style.display = 'block';
-
-loadLocalData();
+// ── INIT ──────────────────────────────────────────────────
+if(!window.JSONBIN_CONFIGURED) document.getElementById('setupNotice').style.display='block';
+loadLocal();
 restoreSession();
-
-setInterval(function() {
-  if (document.getElementById('viewChannels').classList.contains('active')) renderChannelCards();
-}, 30000);
+setInterval(function(){if(document.getElementById('viewChannels').classList.contains('active')) renderChannelCards();},30000);
 </script>
 </body>
 </html>

@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAP STAR Program — AI Day Voting</title>
+<style>
+  :root {
+    --gold: #F0AB00;
+    --gold-light: #FFC832;
+    --gold-dim: rgba(240,171,0,0.15);
+    --dark: #1C2B33;
+    --dark2: #243341;
+    --dark3: #2E3F50;
+    --text: #E8EDF2;
+    --text-dim: #8A9BB0;
+    --border: rgba(255,255,255,0.08);
+    --card-bg: rgba(255,255,255,0.04);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --admin: #9B59B6;
+    --admin-dim: rgba(155,89,182,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: '72', 'Segoe UI', Arial, sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; }
+
+  .header {
+    background: linear-gradient(135deg, var(--dark2) 0%, var(--dark3) 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 14px 24px;
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo { font-size: 20px; font-weight: 700; color: var(--gold); letter-spacing: 1px; white-space: nowrap; }
+  .header-sep { color: var(--text-dim); }
+  .header-title { font-size: 13px; color: var(--text-dim); }
+  .header-user { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-dim); }
+  .badge-role { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-student { background: rgba(46,204,113,0.2); color: #2ECC71; border: 1px solid rgba(46,204,113,0.3); }
+  .badge-manager { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(240,171,0,0.3); }
+  .badge-admin { background: var(--admin-dim); color: var(--admin); border: 1px solid rgba(155,89,182,0.3); }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .landing { max-width: 520px; margin: 60px auto; padding: 0 16px; }
+  .landing-logo { text-align: center; margin-bottom: 32px; }
+  .landing-logo .big-title { font-size: 32px; font-weight: 700; color: var(--gold); }
+  .landing-logo .sub-title { font-size: 14px; color: var(--text-dim); margin-top: 6px; }
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+  .form-group { margin-bottom: 18px; }
+  .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .form-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; color: var(--text); font-size: 15px; outline: none; transition: border-color .2s; }
+  .form-input:focus { border-color: var(--gold); }
+  .role-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .role-option { background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px; cursor: pointer; text-align: center; transition: all .2s; }
+  .role-option:hover { border-color: var(--text-dim); }
+  .role-option.selected { border-color: var(--gold); background: var(--gold-dim); }
+  .role-option .role-icon { font-size: 24px; margin-bottom: 6px; }
+  .role-option .role-name { font-size: 13px; font-weight: 600; }
+  .role-option .role-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .btn { width: 100%; padding: 14px; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; cursor: pointer; transition: all .2s; }
+  .btn-primary { background: var(--gold); color: var(--dark); }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); font-size: 13px; padding: 6px 12px; width: auto; border-radius: var(--radius-sm); cursor: pointer; transition: all .2s; }
+  .btn-ghost:hover { background: var(--card-bg); color: var(--text); }
+
+  .setup-notice { background: rgba(155,89,182,0.1); border: 1px solid rgba(155,89,182,0.3); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 13px; color: #C39BD3; margin-bottom: 16px; line-height: 1.7; }
+  .setup-notice strong { display: block; color: var(--admin); margin-bottom: 4px; }
+  .setup-notice code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+
+  .channel-page { max-width: 900px; margin: 0 auto; padding: 32px 16px; }
+  .page-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .page-subtitle { font-size: 14px; color: var(--text-dim); margin-bottom: 28px; }
+  .channel-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 580px) { .channel-cards { grid-template-columns: 1fr; } }
+  .channel-card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 28px; cursor: pointer; transition: all .25s; position: relative; overflow: hidden; }
+  .channel-card:hover:not(.disabled) { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(240,171,0,0.1); }
+  .channel-card.disabled { opacity: 0.45; cursor: not-allowed; }
+  .channel-card::before { content:''; position:absolute; top:0; left:0; width:4px; height:100%; background:var(--gold); border-radius:4px 0 0 4px; }
+  .channel-card.disabled::before { background: var(--text-dim); }
+  .ch-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .ch-meta { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; line-height: 1.7; }
+  .ch-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
+  .ch-status.open { background: rgba(46,204,113,0.15); color: #2ECC71; }
+  .ch-status.closed { background: rgba(138,155,176,0.15); color: var(--text-dim); }
+  .ch-status.upcoming { background: var(--gold-dim); color: var(--gold); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .team-page { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .team-page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .back-btn { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 7px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; transition: all .2s; }
+  .back-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .tab-bar { display: flex; gap: 4px; background: rgba(255,255,255,0.04); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 20px; width: fit-content; }
+  .tab { padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-dim); transition: all .2s; border: none; background: transparent; }
+  .tab.active { background: var(--gold); color: var(--dark); }
+  .tab:hover:not(.active) { color: var(--text); }
+  .location-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .loc-btn { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; font-size: 12px; font-weight: 600; transition: all .2s; }
+  .loc-btn.active, .loc-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .team-card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 18px; cursor: pointer; transition: all .2s; position: relative; }
+  .team-card:hover { border-color: var(--gold); transform: translateY(-1px); }
+  .team-card.voted { border-color: rgba(46,204,113,0.4); }
+  .voted-badge { position: absolute; top: 10px; right: 10px; background: rgba(46,204,113,0.2); color: #2ECC71; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; border: 1px solid rgba(46,204,113,0.3); }
+  .team-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .team-loc { font-size: 11px; color: var(--text-dim); margin-bottom: 10px; min-height: 16px; }
+  .team-score { font-size: 26px; font-weight: 700; color: var(--gold); line-height: 1; }
+  .team-score-label { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .team-voters { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+  .leaderboard { display: flex; flex-direction: column; gap: 10px; }
+  .lb-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all .2s; }
+  .lb-item:hover { border-color: var(--gold); background: rgba(240,171,0,0.04); }
+  .lb-rank { font-size: 20px; font-weight: 800; min-width: 36px; color: var(--text-dim); }
+  .lb-rank.top1 { color: #FFD700; }
+  .lb-rank.top2 { color: #C0C0C0; }
+  .lb-rank.top3 { color: #CD7F32; }
+  .lb-info { flex: 1; }
+  .lb-name { font-size: 15px; font-weight: 600; }
+  .lb-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .lb-score-wrap { text-align: right; }
+  .lb-score { font-size: 24px; font-weight: 700; color: var(--gold); }
+  .lb-score-sub { font-size: 11px; color: var(--text-dim); }
+  .score-bars { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+  .score-bar-row { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-dim); }
+  .bar-track { flex: 1; height: 4px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width .5s ease; }
+
+  .admin-page { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .admin-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+  .admin-badge { background: var(--admin-dim); color: var(--admin); border: 1px solid rgba(155,89,182,0.35); padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .admin-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; }
+  .stat-val { font-size: 28px; font-weight: 800; color: var(--gold); }
+  .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .admin-section-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .channel-toggle { display: flex; gap: 4px; background: rgba(255,255,255,0.04); border-radius: var(--radius-sm); padding: 4px; }
+  .ch-tab { padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-dim); border: none; background: transparent; transition: all .2s; }
+  .ch-tab.active { background: var(--admin); color: #fff; }
+  .admin-lb { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+  .admin-lb-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px; }
+  .admin-voter-list { display: flex; flex-direction: column; gap: 6px; }
+  .voter-row { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; display: flex; align-items: center; gap: 12px; font-size: 13px; flex-wrap: wrap; }
+  .voter-name { font-weight: 600; min-width: 120px; }
+  .voter-score { color: var(--gold); font-weight: 700; margin-left: auto; }
+  .detail-toggle { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-top: 0; transition: all .2s; }
+  .detail-toggle:hover { border-color: var(--admin); color: var(--admin); }
+  .voter-detail { display: none; width: 100%; margin-top: 8px; font-size: 12px; color: var(--text-dim); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 8px; }
+  .refresh-btn { background: var(--admin-dim); border: 1px solid rgba(155,89,182,0.35); color: var(--admin); padding: 7px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-weight: 600; transition: all .2s; }
+  .refresh-btn:hover { background: rgba(155,89,182,0.25); }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: var(--dark2); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; position: relative; }
+  .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; position: sticky; top: 0; background: var(--dark2); z-index: 1; }
+  .modal-title { font-size: 18px; font-weight: 700; }
+  .modal-subtitle { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+  .modal-close { background: transparent; border: 1px solid var(--border); color: var(--text-dim); cursor: pointer; width: 32px; height: 32px; border-radius: 6px; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .2s; }
+  .modal-close:hover { border-color: var(--text-dim); color: var(--text); }
+  .modal-body { padding: 20px 24px; }
+  .criterion { margin-bottom: 24px; }
+  .criterion-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .criterion-name { font-size: 14px; font-weight: 600; }
+  .criterion-weight { font-size: 12px; color: var(--text-dim); }
+  .criterion-value { font-size: 28px; font-weight: 800; color: var(--gold); min-width: 40px; text-align: right; }
+  .slider { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 6px; background: rgba(255,255,255,0.1); outline: none; cursor: pointer; }
+  .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--gold); cursor: pointer; border: 3px solid var(--dark2); box-shadow: 0 0 0 2px var(--gold); transition: transform .1s; }
+  .slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  .score-preview { background: rgba(240,171,0,0.08); border: 1px solid rgba(240,171,0,0.25); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .preview-total { font-size: 42px; font-weight: 800; color: var(--gold); }
+  .preview-label { font-size: 13px; color: var(--text-dim); }
+  .preview-breakdown { font-size: 11px; color: var(--text-dim); line-height: 1.8; }
+  .comment-area { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; color: var(--text); font-size: 14px; resize: vertical; min-height: 80px; outline: none; margin-bottom: 16px; font-family: inherit; transition: border-color .2s; }
+  .comment-area:focus { border-color: var(--gold); }
+  .comments-section { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px; }
+  .comments-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: var(--text-dim); }
+  .comment-item { background: rgba(255,255,255,0.03); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 10px; border-left: 3px solid var(--border); }
+  .comment-meta { font-size: 11px; color: var(--text-dim); margin-bottom: 5px; display: flex; gap: 8px; align-items: center; }
+  .comment-text { font-size: 13px; line-height: 1.6; }
+  .no-comments { font-size: 13px; color: var(--text-dim); font-style: italic; }
+
+  .rt-indicator { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim); margin-bottom: 16px; }
+  .rt-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); }
+  .rt-dot.live { background: #2ECC71; box-shadow: 0 0 6px #2ECC71; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--dark3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 24px; font-size: 14px; z-index: 1000; transition: transform .3s ease; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: rgba(46,204,113,0.4); color: #2ECC71; }
+  .toast.error { border-color: rgba(231,76,60,0.4); color: #E74C3C; }
+
+  .empty-state { text-align: center; padding: 40px; color: var(--text-dim); }
+  .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+  JSONBIN CONFIGURATION — EDIT THESE TWO LINES ONLY
+  Step 1: Sign up free at https://jsonbin.io
+  Step 2: Click your avatar → API Keys → copy the Secret Key
+  Step 3: Paste the key below, replacing YOUR_SECRET_KEY_HERE
+  Step 4: Change false to true on the JSONBIN_CONFIGURED line
+  Step 5: Save the file — done!
+  ============================================================ -->
+<script>
+window.JSONBIN_API_KEY    = '$2a$10$WopktsKtiAxQEU1cYFgI/.tUzmbZc1SVtt8yOGrmv.TdQfzpPHmUm';   // ← paste your key here
+window.JSONBIN_BIN_ID     = '';                        // leave blank, auto-created
+window.JSONBIN_CONFIGURED = true;                     // ← change to true after adding key
+</script>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">SAP STAR</div>
+  <div class="header-sep">|</div>
+  <div class="header-title">AI Day Voting</div>
+  <div class="header-user" id="headerUser" style="display:none">
+    <span id="headerName"></span>
+    <span id="headerBadge" class="badge-role"></span>
+    <button class="btn-ghost" onclick="goToAdmin()" id="btnAdminNav" style="display:none">Admin</button>
+    <button class="btn-ghost" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- LANDING -->
+  <div class="view active" id="viewLanding">
+    <div class="landing">
+      <div class="landing-logo">
+        <div class="big-title">AI Day 2025</div>
+        <div class="sub-title">Showcase &amp; Hackathon Voting</div>
+      </div>
+      <div class="card">
+        <div id="setupNotice" class="setup-notice" style="display:none">
+          <strong>&#9881; JSONBin not configured — running in local demo mode</strong>
+          To enable real-time sync across all voters: sign up at <strong>jsonbin.io</strong>,
+          copy your Secret Key, paste it as <code>JSONBIN_API_KEY</code> near the top of this
+          file, and set <code>JSONBIN_CONFIGURED = true</code>.
+        </div>
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input class="form-input" id="inputName" type="text" placeholder="e.g. Claudia Li">
+        </div>
+        <div class="form-group">
+          <label class="form-label">SAP ID</label>
+          <input class="form-input" id="inputSapId" type="text" placeholder="e.g. i774309" autocapitalize="none">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <div class="role-picker">
+            <div class="role-option" id="roleStudent" onclick="selectRole('student')">
+              <div class="role-icon">&#127891;</div>
+              <div class="role-name">Student</div>
+              <div class="role-desc">Participant</div>
+            </div>
+            <div class="role-option" id="roleManager" onclick="selectRole('manager')">
+              <div class="role-icon">&#128188;</div>
+              <div class="role-name">Manager / Mentor</div>
+              <div class="role-desc">Reviewer</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btnEnter" onclick="enterApp()" disabled>Enter Voting</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANNEL SELECTION -->
+  <div class="view" id="viewChannels">
+    <div class="channel-page">
+      <div class="page-title">Select Channel</div>
+      <div class="page-subtitle" id="welcomeMsg"></div>
+      <div class="channel-cards" id="channelCards"></div>
+    </div>
+  </div>
+
+  <!-- TEAM LIST / LEADERBOARD -->
+  <div class="view" id="viewTeams">
+    <div class="team-page">
+      <div class="team-page-header">
+        <button class="back-btn" onclick="goBack()">&#8592; Back</button>
+        <span id="channelLabel" style="font-size:18px;font-weight:700;"></span>
+      </div>
+      <div class="tab-bar">
+        <button class="tab active" id="tabVote" onclick="switchTab('vote')">Vote</button>
+        <button class="tab" id="tabLeaderboard" onclick="switchTab('leaderboard')">Leaderboard</button>
+      </div>
+      <div class="location-filter" id="locationFilter" style="display:none"></div>
+      <div id="panelVote">
+        <div class="rt-indicator">
+          <div class="rt-dot" id="voteDot"></div>
+          <span id="voteStatusText"></span>
+        </div>
+        <div class="team-grid" id="teamGrid"></div>
+      </div>
+      <div id="panelLeaderboard" style="display:none">
+        <div class="rt-indicator">
+          <div class="rt-dot" id="lbDot"></div>
+          <span id="lbStatusText"></span>
+        </div>
+        <div id="locationFilterLb" class="location-filter" style="display:none"></div>
+        <div class="leaderboard" id="leaderboardList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN VIEW -->
+  <div class="view" id="viewAdmin">
+    <div class="admin-page">
+      <div class="admin-header">
+        <button class="back-btn" onclick="switchView('viewChannels')">&#8592; Back</button>
+        <span style="font-size:18px;font-weight:700;">Admin Dashboard</span>
+        <span class="admin-badge">&#128081; Admin</span>
+        <button class="refresh-btn" onclick="adminRefresh()">&#8635; Refresh</button>
+      </div>
+      <div class="admin-stats" id="adminStats"></div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+        <div class="admin-section-title" style="margin:0">Rankings</div>
+        <div class="channel-toggle">
+          <button class="ch-tab active" id="adminTabShowcase" onclick="adminSwitchChannel('showcase')">Showcase</button>
+          <button class="ch-tab" id="adminTabHackathon" onclick="adminSwitchChannel('hackathon')">Hackathon</button>
+        </div>
+        <div class="location-filter" id="adminLocFilter" style="display:none;margin:0"></div>
+      </div>
+      <div class="admin-lb" id="adminLeaderboard"></div>
+      <div class="admin-section-title">All Voters</div>
+      <div class="admin-voter-list" id="adminVoterList"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Voting Modal -->
+<div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalTeamName"></div>
+        <div class="modal-subtitle" id="modalTeamSub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">&#215;</button>
+    </div>
+    <div class="modal-body">
+      <div class="score-preview">
+        <div>
+          <div class="preview-total" id="previewTotal">5.0</div>
+          <div class="preview-label">Total / 10</div>
+        </div>
+        <div class="preview-breakdown" id="previewBreakdown"></div>
+      </div>
+      <div class="criterion">
+        <div class="criterion-header">
+          <div><div class="criterion-name">AI Innovation</div><div class="criterion-weight">Weight 40%</div></div>
+          <div class="criterion-value" id="valAI">5</div>
+        </div>
+        <input type="range" class="slider" id="sliderAI" min="1" max="10" value="5" oninput="updatePreview()">
+      </div>
+      <div class="criterion">
+        <div class="criterion-header">
+          <div><div class="criterion-name">Business Impact</div><div class="criterion-weight">Weight 40%</div></div>
+          <div class="criterion-value" id="valBiz">5</div>
+        </div>
+        <input type="range" class="slider" id="sliderBiz" min="1" max="10" value="5" oninput="updatePreview()">
+      </div>
+      <div class="criterion">
+        <div class="criterion-header">
+          <div><div class="criterion-name">Presentation &amp; Teamwork</div><div class="criterion-weight">Weight 20%</div></div>
+          <div class="criterion-value" id="valPres">5</div>
+        </div>
+        <input type="range" class="slider" id="sliderPres" min="1" max="10" value="5" oninput="updatePreview()">
+      </div>
+      <label class="form-label">Comment <span style="font-weight:400;color:var(--text-dim)">(optional)</span></label>
+      <textarea class="comment-area" id="inputComment" placeholder="Leave your thoughts on this team&#8230;"></textarea>
+      <button class="btn btn-primary" id="btnSubmit" onclick="submitVote()">Submit Score</button>
+      <div class="comments-section">
+        <div class="comments-title">Audience Comments</div>
+        <div id="commentsList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ==================== CONSTANTS ====================
+const ADMIN_IDS = ['i774309'];
+
+const SHOWCASE_TEAMS = Array.from({length: 32}, (_, i) => ({
+  id: 'team-' + (i+1), name: 'Team ' + (i+1), location: null
+}));
+
+const HACKATHON_TEAMS = [
+  {id:'BJ-1', name:'BJ 1', location:'Beijing'},
+  {id:'BJ-2', name:'BJ 2', location:'Beijing'},
+  {id:'BJ-3', name:'BJ 3', location:'Beijing'},
+  {id:'DL-1', name:'DL 1', location:'Dalian'},
+  {id:'DL-2', name:'DL 2', location:'Dalian'},
+  {id:'DL-3', name:'DL 3', location:'Dalian'},
+  {id:'CD-1', name:'CD 1', location:'Chengdu'},
+  {id:'CD-2', name:'CD 2', location:'Chengdu'},
+  {id:'CD-3', name:'CD 3', location:'Chengdu'},
+  {id:'SH-1',  name:'SH 1',  location:'Shanghai'},
+  {id:'SH-2',  name:'SH 2',  location:'Shanghai'},
+  {id:'SH-3',  name:'SH 3',  location:'Shanghai'},
+  {id:'SH-4',  name:'SH 4',  location:'Shanghai'},
+  {id:'SH-5',  name:'SH 5',  location:'Shanghai'},
+  {id:'SH-6',  name:'SH 6',  location:'Shanghai'},
+  {id:'SH-7',  name:'SH 7',  location:'Shanghai'},
+  {id:'SH-8',  name:'SH 8',  location:'Shanghai'},
+  {id:'SH-9',  name:'SH 9',  location:'Shanghai'},
+  {id:'SH-10', name:'SH 10', location:'Shanghai'},
+  {id:'SH-11', name:'SH 11', location:'Shanghai'},
+  {id:'SH-12', name:'SH 12', location:'Shanghai'}
+];
+
+const CHANNELS = {
+  showcase: {
+    label: 'Showcase', teams: SHOWCASE_TEAMS,
+    start: new Date('2000-01-01T00:00:00'),
+    end:   new Date('2099-12-31T23:59:59')
+  },
+  hackathon: {
+    label: 'Hackathon', teams: HACKATHON_TEAMS,
+    start: new Date('2000-01-01T00:00:00'),
+    end:   new Date('2099-12-31T23:59:59')
+  }
+};
+
+const ROLE_WEIGHT = {student: 1, manager: 2};
+const ROLE_LABELS = {student: 'Student', manager: 'Manager/Mentor'};
+
+// ==================== STATE ====================
+let user = null;
+let currentChannel = null;
+let currentTab = 'vote';
+let currentLocFilter = 'ALL';
+let currentLocFilterLb = 'ALL';
+let adminChannel = 'showcase';
+let adminLocFilter = 'ALL';
+let allVotesData = {};
+let modalTeamId = null;
+let synced = false;
+
+// ==================== JSONBIN ====================
+var JB_BASE = 'https://api.jsonbin.io/v3';
+
+function jbGet() {
+  var binId = window.JSONBIN_BIN_ID;
+  if (!binId) return Promise.resolve(null);
+  return fetch(JB_BASE + '/b/' + binId + '/latest', {
+    headers: {'X-Master-Key': window.JSONBIN_API_KEY, 'X-Bin-Meta': 'false'}
+  }).then(function(r) { return r.ok ? r.json() : null; })
+    .catch(function() { return null; });
+}
+
+function jbPut(data) {
+  var binId = window.JSONBIN_BIN_ID;
+  if (!binId) {
+    return fetch(JB_BASE + '/b', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': window.JSONBIN_API_KEY,
+        'X-Bin-Name': 'sap-ai-day-votes'
+      },
+      body: JSON.stringify(data)
+    }).then(function(r) {
+      if (!r.ok) throw new Error('create bin failed');
+      return r.json();
+    }).then(function(j) {
+      window.JSONBIN_BIN_ID = j.metadata.id;
+      localStorage.setItem('sap_bin_id', j.metadata.id);
+      return j.record;
+    });
+  }
+  return fetch(JB_BASE + '/b/' + binId, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json', 'X-Master-Key': window.JSONBIN_API_KEY},
+    body: JSON.stringify(data)
+  }).then(function(r) {
+    if (!r.ok) throw new Error('update bin failed');
+    return r.json();
+  }).then(function(j) { return j.record; });
+}
+
+function loadRemoteData() {
+  if (!window.JSONBIN_CONFIGURED) return Promise.resolve();
+  return jbGet().then(function(data) {
+    if (data) { allVotesData = data; synced = true; }
+  }).catch(function(e) { console.warn('JSONBin load failed', e); });
+}
+
+function saveRemoteData() {
+  if (!window.JSONBIN_CONFIGURED) return Promise.resolve();
+  return jbPut(allVotesData).then(function() {
+    synced = true;
+  }).catch(function(e) {
+    synced = false;
+    throw e;
+  });
+}
+
+// ==================== LOCAL STORAGE ====================
+function loadLocalData() {
+  var savedBin = localStorage.getItem('sap_bin_id');
+  if (savedBin && !window.JSONBIN_BIN_ID) window.JSONBIN_BIN_ID = savedBin;
+  try {
+    var s = localStorage.getItem('sap_votes');
+    if (s) allVotesData = JSON.parse(s);
+  } catch(e) {}
+}
+
+function saveLocalData() {
+  localStorage.setItem('sap_votes', JSON.stringify(allVotesData));
+}
+
+// ==================== VOTE SAVE ====================
+function saveVote(channel, sapId, userData, teamId, scores, comment) {
+  if (!allVotesData[channel]) allVotesData[channel] = {};
+  if (!allVotesData[channel][sapId])
+    allVotesData[channel][sapId] = {name: userData.name, role: userData.role, votes: {}};
+  allVotesData[channel][sapId].votes[teamId] = Object.assign({}, scores, {comment: comment});
+  saveLocalData();
+  if (window.JSONBIN_CONFIGURED) return saveRemoteData();
+  return Promise.resolve();
+}
+
+// ==================== SCORE CALC ====================
+function calcRawScore(v) {
+  return v.aiInnovation * 0.4 + v.businessImpact * 0.4 + v.presentation * 0.2;
+}
+
+function calcTeamScores(channel) {
+  var votes = allVotesData[channel] || {};
+  return CHANNELS[channel].teams.map(function(team) {
+    var wSum = 0, wTotal = 0, count = 0, aiSum = 0, bizSum = 0, presSum = 0;
+    var comments = [];
+    Object.keys(votes).forEach(function(sid) {
+      var voter = votes[sid];
+      var v = voter.votes && voter.votes[team.id];
+      if (!v) return;
+      var w = ROLE_WEIGHT[voter.role] || 1;
+      wSum += calcRawScore(v) * w; wTotal += w; count++;
+      aiSum += v.aiInnovation; bizSum += v.businessImpact; presSum += v.presentation;
+      if (v.comment && v.comment.trim())
+        comments.push({name: voter.name, role: voter.role, comment: v.comment.trim()});
+    });
+    var score = wTotal > 0 ? wSum / wTotal : 0;
+    var myVote = user && votes[user.sapId] && votes[user.sapId].votes && votes[user.sapId].votes[team.id];
+    return Object.assign({}, team, {
+      score: score, voterCount: count, comments: comments,
+      myVote: myVote || null,
+      avgAI: count > 0 ? aiSum/count : 0,
+      avgBiz: count > 0 ? bizSum/count : 0,
+      avgPres: count > 0 ? presSum/count : 0
+    });
+  });
+}
+
+// ==================== AUTH ====================
+function isAdmin(sapId) {
+  return ADMIN_IDS.indexOf((sapId || '').toLowerCase()) !== -1;
+}
+
+function selectRole(role) {
+  user = user || {};
+  user.role = role;
+  document.getElementById('roleStudent').classList.toggle('selected', role === 'student');
+  document.getElementById('roleManager').classList.toggle('selected', role === 'manager');
+  checkEnterBtn();
+}
+
+function checkEnterBtn() {
+  var ok = document.getElementById('inputName').value.trim() &&
+           document.getElementById('inputSapId').value.trim() &&
+           user && user.role;
+  document.getElementById('btnEnter').disabled = !ok;
+}
+document.getElementById('inputName').addEventListener('input', checkEnterBtn);
+document.getElementById('inputSapId').addEventListener('input', checkEnterBtn);
+
+function enterApp() {
+  var name  = document.getElementById('inputName').value.trim();
+  var sapId = document.getElementById('inputSapId').value.trim().toLowerCase();
+  if (!name || !sapId || !user || !user.role) return;
+  user = {name: name, sapId: sapId, role: user.role};
+  sessionStorage.setItem('sap_user', JSON.stringify(user));
+  var btn = document.getElementById('btnEnter');
+  btn.disabled = true; btn.textContent = 'Loading…';
+  loadRemoteData().then(function() {
+    btn.textContent = 'Enter Voting'; btn.disabled = false;
+    showChannelView();
+  });
+}
+
+function logout() {
+  sessionStorage.removeItem('sap_user');
+  user = null; currentChannel = null;
+  switchView('viewLanding');
+  document.getElementById('headerUser').style.display = 'none';
+}
+
+function restoreSession() {
+  var s = sessionStorage.getItem('sap_user');
+  if (!s) return;
+  user = JSON.parse(s);
+  loadRemoteData().then(showChannelView);
+}
+
+// ==================== VIEWS ====================
+function switchView(id) {
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+function showChannelView() {
+  document.getElementById('headerUser').style.display = 'flex';
+  document.getElementById('headerName').textContent = user.name;
+  var badge = document.getElementById('headerBadge');
+  var adminNav = document.getElementById('btnAdminNav');
+  if (isAdmin(user.sapId)) {
+    badge.textContent = 'Admin';
+    badge.className = 'badge-role badge-admin';
+    adminNav.style.display = 'inline-block';
+  } else {
+    badge.textContent = ROLE_LABELS[user.role];
+    badge.className = 'badge-role ' + (user.role === 'student' ? 'badge-student' : 'badge-manager');
+    adminNav.style.display = 'none';
+  }
+  document.getElementById('welcomeMsg').textContent = 'Welcome, ' + user.name + '! Please select a voting channel.';
+  renderChannelCards();
+  switchView('viewChannels');
+}
+
+function goBack() {
+  currentChannel = null;
+  showChannelView();
+}
+
+function renderChannelCards() {
+  var now = new Date();
+  var c = document.getElementById('channelCards');
+  c.innerHTML = '';
+  Object.keys(CHANNELS).forEach(function(key) {
+    var ch = CHANNELS[key];
+    var isOpen = now >= ch.start && now <= ch.end;
+    var isUpcoming = now < ch.start;
+    var statusText  = isOpen ? 'Open' : isUpcoming ? 'Coming Soon' : 'Closed';
+    var statusClass = isOpen ? 'open' : isUpcoming ? 'upcoming' : 'closed';
+    var div = document.createElement('div');
+    div.className = 'channel-card' + (isOpen ? '' : ' disabled');
+    if (isOpen) { (function(k){ div.onclick = function(){ enterChannel(k); }; })(key); }
+    div.innerHTML =
+      '<div class="ch-name">' + ch.label + '</div>' +
+      '<div class="ch-meta">' + ch.teams.length + ' teams<br>Open: ' + fmtDate(ch.start) + ' – ' + fmtDate(ch.end) + '</div>' +
+      '<div class="ch-status ' + statusClass + '"><div class="dot"></div>' + statusText + '</div>';
+    c.appendChild(div);
+  });
+}
+
+function fmtDate(d) {
+  return (d.getMonth()+1) + '/' + d.getDate() + ' ' +
+    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function enterChannel(channel) {
+  currentChannel = channel;
+  currentLocFilter = 'ALL';
+  currentLocFilterLb = 'ALL';
+  currentTab = 'vote';
+  document.getElementById('channelLabel').textContent = CHANNELS[channel].label;
+  switchView('viewTeams');
+  switchTab('vote');
+  allVotesData[channel] = allVotesData[channel] || {};
+  renderLocationFilter();
+  renderTeams();
+  renderLeaderboard();
+  updateStatusBar();
+}
+
+function updateStatusBar() {
+  var live = window.JSONBIN_CONFIGURED && synced;
+  ['voteDot','lbDot'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (live) el.classList.add('live'); else el.classList.remove('live');
+  });
+  document.getElementById('voteStatusText').textContent = live
+    ? 'Live — synced with all voters'
+    : 'Local mode — data saved in this browser only';
+  document.getElementById('lbStatusText').textContent = live
+    ? 'Live rankings — all voters included'
+    : 'Showing your votes only';
+}
+
+// ==================== TABS ====================
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabVote').classList.toggle('active', tab === 'vote');
+  document.getElementById('tabLeaderboard').classList.toggle('active', tab === 'leaderboard');
+  document.getElementById('panelVote').style.display = tab === 'vote' ? 'block' : 'none';
+  document.getElementById('panelLeaderboard').style.display = tab === 'leaderboard' ? 'block' : 'none';
+  if (tab === 'leaderboard') renderLeaderboard();
+}
+
+// ==================== LOCATION FILTER ====================
+function buildLocFilter(containerEl, getVal, setVal, onChangeCb) {
+  var locs = [];
+  if (currentChannel) {
+    var seen = {};
+    CHANNELS[currentChannel].teams.forEach(function(t) {
+      if (t.location && !seen[t.location]) { seen[t.location] = true; locs.push(t.location); }
+    });
+  }
+  containerEl.style.display = locs.length ? 'flex' : 'none';
+  containerEl.innerHTML = '';
+  function mkBtn(label, val) {
+    var b = document.createElement('button');
+    b.className = 'loc-btn' + (getVal() === val ? ' active' : '');
+    b.textContent = label;
+    b.onclick = function() {
+      setVal(val);
+      containerEl.querySelectorAll('.loc-btn').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      onChangeCb();
+    };
+    containerEl.appendChild(b);
+  }
+  mkBtn('All', 'ALL');
+  locs.forEach(function(l) { mkBtn(l, l); });
+}
+
+function renderLocationFilter() {
+  buildLocFilter(
+    document.getElementById('locationFilter'),
+    function(){ return currentLocFilter; },
+    function(v){ currentLocFilter = v; },
+    renderTeams
+  );
+  buildLocFilter(
+    document.getElementById('locationFilterLb'),
+    function(){ return currentLocFilterLb; },
+    function(v){ currentLocFilterLb = v; },
+    renderLeaderboard
+  );
+}
+
+// ==================== TEAM GRID ====================
+function renderTeams() {
+  if (!currentChannel) return;
+  var teams = calcTeamScores(currentChannel).filter(function(t) {
+    return currentLocFilter === 'ALL' || t.location === currentLocFilter;
+  });
+  var grid = document.getElementById('teamGrid');
+  grid.innerHTML = '';
+  teams.forEach(function(team) {
+    var div = document.createElement('div');
+    div.className = 'team-card' + (team.myVote ? ' voted' : '');
+    (function(id){ div.onclick = function(){ openModal(id); }; })(team.id);
+    div.innerHTML =
+      (team.myVote ? '<div class="voted-badge">Voted</div>' : '') +
+      '<div class="team-name">' + team.name + '</div>' +
+      '<div class="team-loc">' + (team.location || '') + '</div>' +
+      '<div class="team-score">' + (team.score > 0 ? team.score.toFixed(2) : '–') + '</div>' +
+      '<div class="team-score-label">Weighted Avg</div>' +
+      '<div class="team-voters">' + team.voterCount + ' vote' + (team.voterCount !== 1 ? 's' : '') + '</div>';
+    grid.appendChild(div);
+  });
+}
+
+// ==================== LEADERBOARD ====================
+function renderLeaderboard() {
+  if (!currentChannel) return;
+  var sorted = calcTeamScores(currentChannel)
+    .filter(function(t){ return currentLocFilterLb === 'ALL' || t.location === currentLocFilterLb; })
+    .sort(function(a, b){ return b.score - a.score; });
+  var list = document.getElementById('leaderboardList');
+  list.innerHTML = '';
+  if (sorted.every(function(t){ return t.score === 0; })) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">&#128202;</div>No votes yet</div>';
+    return;
+  }
+  sorted.forEach(function(team, i) {
+    var rank = i + 1;
+    var rankClass = rank <= 3 ? 'top' + rank : '';
+    var rankLabel = rank === 1 ? '&#129351;' : rank === 2 ? '&#129352;' : rank === 3 ? '&#129353;' : rank;
+    var mv = team.myVote;
+    var div = document.createElement('div');
+    div.className = 'lb-item';
+    (function(id){ div.onclick = function(){ openModal(id); }; })(team.id);
+    div.innerHTML =
+      '<div class="lb-rank ' + rankClass + '">' + rankLabel + '</div>' +
+      '<div class="lb-info">' +
+        '<div class="lb-name">' + team.name + (team.location ? ' <span style="font-size:11px;color:var(--text-dim)">(' + team.location + ')</span>' : '') + '</div>' +
+        '<div class="lb-sub">' + team.voterCount + ' vote' + (team.voterCount!==1?'s':'') + ' · ' + team.comments.length + ' comment' + (team.comments.length!==1?'s':'') + (mv?' · <span style="color:#2ECC71">Voted</span>':'') + '</div>' +
+        (mv ?
+          '<div class="score-bars">' +
+            '<div class="score-bar-row">AI Innovation<div class="bar-track"><div class="bar-fill" style="width:' + mv.aiInnovation*10 + '%"></div></div>' + mv.aiInnovation + '</div>' +
+            '<div class="score-bar-row">Business Impact<div class="bar-track"><div class="bar-fill" style="width:' + mv.businessImpact*10 + '%"></div></div>' + mv.businessImpact + '</div>' +
+            '<div class="score-bar-row">Presentation<div class="bar-track"><div class="bar-fill" style="width:' + mv.presentation*10 + '%"></div></div>' + mv.presentation + '</div>' +
+          '</div>' : '') +
+      '</div>' +
+      '<div class="lb-score-wrap"><div class="lb-score">' + (team.score>0?team.score.toFixed(2):'–') + '</div><div class="lb-score-sub">/ 10</div></div>';
+    list.appendChild(div);
+  });
+}
+
+// ==================== MODAL ====================
+function openModal(teamId) {
+  var team = null;
+  CHANNELS[currentChannel].teams.forEach(function(t){ if (t.id === teamId) team = t; });
+  if (!team) return;
+  modalTeamId = teamId;
+  var chVotes = allVotesData[currentChannel] || {};
+  var myVote = chVotes[user.sapId] && chVotes[user.sapId].votes && chVotes[user.sapId].votes[teamId];
+  document.getElementById('modalTeamName').textContent = team.name;
+  document.getElementById('modalTeamSub').textContent = team.location ? team.location + ' · ' + CHANNELS[currentChannel].label : CHANNELS[currentChannel].label;
+  document.getElementById('sliderAI').value  = myVote ? myVote.aiInnovation  : 5;
+  document.getElementById('sliderBiz').value = myVote ? myVote.businessImpact : 5;
+  document.getElementById('sliderPres').value = myVote ? myVote.presentation  : 5;
+  document.getElementById('inputComment').value = (myVote && myVote.comment) ? myVote.comment : '';
+  document.getElementById('btnSubmit').textContent = myVote ? 'Update Score' : 'Submit Score';
+  updatePreview();
+  renderModalComments(teamId);
+  document.getElementById('modalOverlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.add('hidden');
+  document.body.style.overflow = '';
+  modalTeamId = null;
+}
+
+function closeModalOnOverlay(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function updatePreview() {
+  var ai   = +document.getElementById('sliderAI').value;
+  var biz  = +document.getElementById('sliderBiz').value;
+  var pres = +document.getElementById('sliderPres').value;
+  document.getElementById('valAI').textContent   = ai;
+  document.getElementById('valBiz').textContent  = biz;
+  document.getElementById('valPres').textContent = pres;
+  var total = ai * 0.4 + biz * 0.4 + pres * 0.2;
+  document.getElementById('previewTotal').textContent = total.toFixed(1);
+  document.getElementById('previewBreakdown').innerHTML =
+    'AI Innovation: ' + ai + ' × 40% = ' + (ai*0.4).toFixed(1) + '<br>' +
+    'Business Impact: ' + biz + ' × 40% = ' + (biz*0.4).toFixed(1) + '<br>' +
+    'Presentation: ' + pres + ' × 20% = ' + (pres*0.2).toFixed(1);
+}
+
+function renderModalComments(teamId) {
+  var votes = allVotesData[currentChannel] || {};
+  var comments = [];
+  Object.keys(votes).forEach(function(sid) {
+    var voter = votes[sid];
+    var v = voter.votes && voter.votes[teamId];
+    if (v && v.comment && v.comment.trim())
+      comments.push({name: voter.name, role: voter.role, comment: v.comment.trim()});
+  });
+  document.getElementById('commentsList').innerHTML = comments.length
+    ? comments.map(function(c) {
+        return '<div class="comment-item">' +
+          '<div class="comment-meta"><span>' + escHtml(c.name) + '</span>' +
+          '<span class="badge-role ' + (c.role==='student'?'badge-student':'badge-manager') + '" style="font-size:10px;padding:2px 7px">' + ROLE_LABELS[c.role] + '</span></div>' +
+          '<div class="comment-text">' + escHtml(c.comment) + '</div></div>';
+      }).join('')
+    : '<div class="no-comments">No comments yet</div>';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function submitVote() {
+  var teamId = modalTeamId;
+  if (!teamId) return;
+  var ai   = +document.getElementById('sliderAI').value;
+  var biz  = +document.getElementById('sliderBiz').value;
+  var pres = +document.getElementById('sliderPres').value;
+  var comment = document.getElementById('inputComment').value.trim();
+  var btn = document.getElementById('btnSubmit');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  saveVote(currentChannel, user.sapId, user, teamId, {aiInnovation:ai, businessImpact:biz, presentation:pres}, comment)
+    .then(function() {
+      showToast('Score submitted!', 'success');
+      btn.textContent = 'Update Score';
+      renderModalComments(teamId);
+      renderTeams();
+      renderLeaderboard();
+      updateStatusBar();
+    })
+    .catch(function() {
+      showToast('Saved locally (sync failed)', 'error');
+      btn.textContent = 'Update Score';
+      renderModalComments(teamId);
+      renderTeams();
+      renderLeaderboard();
+    })
+    .finally(function() { btn.disabled = false; });
+}
+
+// ==================== ADMIN ====================
+function goToAdmin() {
+  if (!isAdmin(user && user.sapId)) return;
+  adminRefresh();
+  switchView('viewAdmin');
+}
+
+function adminRefresh() {
+  var btn = document.querySelector('.refresh-btn');
+  if (btn) { btn.textContent = '⏳ Loading…'; btn.disabled = true; }
+  loadRemoteData().then(function() {
+    renderAdminStats();
+    renderAdminLeaderboard();
+    renderAdminVoters();
+    if (btn) { btn.textContent = '蘵 Refresh'; btn.disabled = false; }
+  });
+}
+
+function adminSwitchChannel(ch) {
+  adminChannel = ch;
+  adminLocFilter = 'ALL';
+  document.getElementById('adminTabShowcase').classList.toggle('active', ch === 'showcase');
+  document.getElementById('adminTabHackathon').classList.toggle('active', ch === 'hackathon');
+  renderAdminLocFilter();
+  renderAdminLeaderboard();
+  renderAdminVoters();
+}
+
+function renderAdminLocFilter() {
+  var locs = [];
+  var seen = {};
+  CHANNELS[adminChannel].teams.forEach(function(t) {
+    if (t.location && !seen[t.location]) { seen[t.location] = true; locs.push(t.location); }
+  });
+  var el = document.getElementById('adminLocFilter');
+  el.style.display = locs.length ? 'flex' : 'none';
+  el.innerHTML = '';
+  function mkBtn(label, val) {
+    var b = document.createElement('button');
+    b.className = 'loc-btn' + (adminLocFilter === val ? ' active' : '');
+    b.textContent = label;
+    b.onclick = function() {
+      adminLocFilter = val;
+      el.querySelectorAll('.loc-btn').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      renderAdminLeaderboard();
+    };
+    el.appendChild(b);
+  }
+  mkBtn('All', 'ALL');
+  locs.forEach(function(l) { mkBtn(l, l); });
+}
+
+function renderAdminStats() {
+  var allSapIds = {};
+  ['showcase','hackathon'].forEach(function(ch) {
+    Object.keys(allVotesData[ch] || {}).forEach(function(id) { allSapIds[id] = true; });
+  });
+  var totalVoters = Object.keys(allSapIds).length;
+  var scVoters = Object.keys(allVotesData.showcase || {}).length;
+  var hkVoters = Object.keys(allVotesData.hackathon || {}).length;
+  var allVoters = Object.values(allVotesData.showcase || {}).concat(Object.values(allVotesData.hackathon || {}));
+  var managers = allVoters.filter(function(v){ return v.role === 'manager'; }).length;
+
+  document.getElementById('adminStats').innerHTML =
+    '<div class="stat-card"><div class="stat-val">' + totalVoters + '</div><div class="stat-label">Total Voters</div></div>' +
+    '<div class="stat-card"><div class="stat-val">' + scVoters + '</div><div class="stat-label">Showcase Voters</div></div>' +
+    '<div class="stat-card"><div class="stat-val">' + hkVoters + '</div><div class="stat-label">Hackathon Voters</div></div>' +
+    '<div class="stat-card"><div class="stat-val">' + managers + '</div><div class="stat-label">Managers / Mentors</div></div>' +
+    '<div class="stat-card"><div class="stat-val">' + (totalVoters - managers) + '</div><div class="stat-label">Students</div></div>' +
+    '<div class="stat-card" style="border-color:' + (synced?'rgba(46,204,113,0.4)':'var(--border)') + '">' +
+      '<div class="stat-val" style="font-size:18px;color:' + (synced?'#2ECC71':'var(--text-dim)') + '">' + (synced?'Live':'Local') + '</div>' +
+      '<div class="stat-label">Data Source</div></div>';
+}
+
+function renderAdminLeaderboard() {
+  renderAdminLocFilter();
+  var teams = calcTeamScores(adminChannel)
+    .filter(function(t){ return adminLocFilter === 'ALL' || t.location === adminLocFilter; })
+    .sort(function(a,b){ return b.score - a.score; });
+
+  var list = document.getElementById('adminLeaderboard');
+  list.innerHTML = '';
+  if (teams.every(function(t){ return t.score === 0; })) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">&#128202;</div>No votes yet</div>';
+    return;
+  }
+  teams.forEach(function(team, i) {
+    var rank = i + 1;
+    var rankClass = rank <= 3 ? 'top' + rank : '';
+    var rankLabel = rank === 1 ? '&#129351;' : rank === 2 ? '&#129352;' : rank === 3 ? '&#129353;' : '#' + rank;
+    var div = document.createElement('div');
+    div.className = 'admin-lb-item';
+    div.innerHTML =
+      '<div class="lb-rank ' + rankClass + '" style="font-size:16px">' + rankLabel + '</div>' +
+      '<div>' +
+        '<div style="font-weight:700">' + team.name + (team.location ? ' <span style="font-size:11px;color:var(--text-dim)">(' + team.location + ')</span>' : '') + '</div>' +
+        '<div style="font-size:12px;color:var(--text-dim)">' + team.voterCount + ' voter' + (team.voterCount!==1?'s':'') + ' · ' + team.comments.length + ' comment' + (team.comments.length!==1?'s':'') + '</div>' +
+        '<div style="font-size:11px;color:var(--text-dim);margin-top:2px">AI: ' + team.avgAI.toFixed(1) + ' · Biz: ' + team.avgBiz.toFixed(1) + ' · Pres: ' + team.avgPres.toFixed(1) + '</div>' +
+      '</div>' +
+      '<div style="text-align:right"><div style="font-size:22px;font-weight:800;color:var(--gold)">' + team.score.toFixed(2) + '</div><div style="font-size:11px;color:var(--text-dim)">/ 10</div></div>';
+    list.appendChild(div);
+  });
+}
+
+function renderAdminVoters() {
+  var votes = allVotesData[adminChannel] || {};
+  var list = document.getElementById('adminVoterList');
+  if (Object.keys(votes).length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">&#128101;</div>No voters yet</div>';
+    return;
+  }
+  list.innerHTML = '';
+  Object.keys(votes).forEach(function(sapId) {
+    var voter = votes[sapId];
+    var votedKeys = Object.keys(voter.votes || {});
+    var totalTeams = CHANNELS[adminChannel].teams.length;
+    var avgScore = votedKeys.length > 0
+      ? votedKeys.reduce(function(s, tid){ return s + calcRawScore(voter.votes[tid]); }, 0) / votedKeys.length
+      : 0;
+    var uid = 'voter-' + sapId.replace(/\W/g,'_');
+    var detailHtml = votedKeys.map(function(tid) {
+      var v = voter.votes[tid];
+      var team = null;
+      CHANNELS[adminChannel].teams.forEach(function(t){ if(t.id===tid) team=t; });
+      return '<strong>' + (team ? team.name : tid) + '</strong>: AI ' + v.aiInnovation + ' · Biz ' + v.businessImpact + ' · Pres ' + v.presentation + ' → <strong>' + calcRawScore(v).toFixed(1) + '</strong>' + (v.comment ? ' — “' + escHtml(v.comment) + '”' : '');
+    }).join('<br>');
+    var row = document.createElement('div');
+    row.className = 'voter-row';
+    row.innerHTML =
+      '<span class="voter-name">' + escHtml(voter.name) + '</span>' +
+      '<span style="font-size:12px;color:var(--text-dim)">' + sapId + '</span>' +
+      '<span class="badge-role ' + (voter.role==='student'?'badge-student':'badge-manager') + '" style="font-size:10px;padding:2px 8px">' + ROLE_LABELS[voter.role] + '</span>' +
+      '<span style="font-size:12px;color:var(--text-dim)">' + votedKeys.length + '/' + totalTeams + ' teams</span>' +
+      '<span class="voter-score">' + avgScore.toFixed(2) + ' avg</span>' +
+      '<button class="detail-toggle" onclick="toggleVoterDetail(\'' + uid + '\')">Details &#9662;</button>' +
+      '<div class="voter-detail" id="' + uid + '">' + detailHtml + '</div>';
+    list.appendChild(row);
+  });
+}
+
+function toggleVoterDetail(id) {
+  var el = document.getElementById(id);
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+// ==================== TOAST ====================
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type||'') + ' show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.className = 'toast ' + (type||''); }, 2800);
+}
+
+// ==================== INIT ====================
+if (!window.JSONBIN_CONFIGURED)
+  document.getElementById('setupNotice').style.display = 'block';
+
+loadLocalData();
+restoreSession();
+
+setInterval(function() {
+  if (document.getElementById('viewChannels').classList.contains('active')) renderChannelCards();
+}, 30000);
+</script>
+</body>
+</html>

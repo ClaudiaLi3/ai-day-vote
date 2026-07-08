@@ -426,6 +426,65 @@ body {
 .topic-edit-input { flex:1; border:1px solid var(--border2); border-radius:var(--radius-sm); padding:6px 10px; font-size:13px; font-family:inherit; outline:none; color:var(--text); }
 .topic-edit-input:focus { border-color:var(--blue); }
 
+
+/* ── TIMELINE ──────────────────────────────────────────── */
+.tl-wrap { padding: 0 4px 32px; }
+.tl-date-header {
+  display: flex; align-items: center; gap: 14px;
+  margin: 32px 0 20px;
+  font-size: 12px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: .8px;
+}
+.tl-date-header:first-child { margin-top: 4px; }
+.tl-date-line { flex: 1; height: 1px; background: var(--border); }
+.tl-block-label {
+  display: inline-flex; align-items: center;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; padding: 4px 12px;
+  border-radius: 20px; margin: 16px 0 10px;
+  color: #fff;
+}
+.tl-break {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; color: var(--text3); font-size: 13px; font-style: italic;
+}
+.tl-break-line { flex: 1; height: 1px; background: var(--border); }
+.tl-item {
+  display: grid; grid-template-columns: 52px 1fr;
+  gap: 0 14px; margin-bottom: 8px; position: relative;
+}
+.tl-item:not(:last-child)::after {
+  content: ''; position: absolute;
+  left: 25px; top: 52px; bottom: -8px;
+  width: 2px; background: var(--border); z-index: 0;
+}
+.tl-num, .tl-time {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; color: #fff;
+  flex-shrink: 0; position: relative; z-index: 1;
+}
+.tl-time {
+  border-radius: var(--radius-sm);
+  font-size: 10px; font-weight: 700; text-align: center;
+  line-height: 1.3; padding: 4px;
+}
+.tl-body {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  cursor: pointer; transition: border-color .15s, box-shadow .15s;
+}
+.tl-body:hover { border-color: var(--blue); box-shadow: 0 2px 10px rgba(35,86,202,0.1); }
+.tl-body.voted { border-color: var(--green); background: #f8fdf8; }
+.tl-team-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.tl-topic { font-size: 13px; color: var(--text2); margin-bottom: 8px; line-height: 1.4; }
+.tl-participants { display: flex; flex-wrap: wrap; gap: 5px; }
+.tl-person {
+  font-size: 11px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 2px 9px; color: var(--text2);
+}
+.tl-voted-badge { font-size: 11px; font-weight: 700; color: var(--green); margin-left: 8px; }
+
 /* ── STATUS BAR ────────────────────────────────────────── */
 .status-bar { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text3); margin-bottom: 20px; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
@@ -506,6 +565,50 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
 .comment-meta { font-size: 11px; color: var(--text2); margin-bottom: 4px; display: flex; gap: 6px; align-items: center; }
 .comment-text { font-size: 13px; color: var(--text); line-height: 1.55; }
 .no-comments  { font-size: 13px; color: var(--text3); font-style: italic; }
+
+/* ── MODAL TEAM INFO (showcase) ─────────────────────────── */
+.modal-info {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.modal-info-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-bottom: 6px;
+}
+.modal-info-topic {
+  font-size: 14px; font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.modal-info-participants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.modal-info-person {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text);
+}
+.modal-info-person-sap {
+  font-size: 10px;
+  color: var(--text3);
+  font-family: monospace;
+  letter-spacing: .3px;
+}
 
 /* ── ADMIN DASHBOARD ───────────────────────────────────── */
 .admin-bar {
@@ -637,6 +740,7 @@ window.JSONBIN_CONFIGURED = true;
         <div class="form-group">
           <label class="form-label">SAP ID</label>
           <input class="form-input" id="inputSapId" type="text" placeholder="e.g. i774309" autocapitalize="none">
+          <div id="sapIdHint" style="font-size:12px;color:var(--red);margin-top:4px;display:none">Only letters, digits, dot, dash, underscore allowed.</div>
         </div>
         <div class="form-group">
           <label class="form-label">Role</label>
@@ -652,6 +756,11 @@ window.JSONBIN_CONFIGURED = true;
               <div class="role-desc">Reviewer</div>
             </button>
           </div>
+        </div>
+        <div class="form-group" id="adminPwGroup" style="display:none">
+          <label class="form-label">Admin Password</label>
+          <input class="form-input" id="inputAdminPw" type="password" placeholder="Enter admin password" autocomplete="off">
+          <div id="adminPwHint" style="font-size:12px;color:var(--red);margin-top:4px;display:none">Incorrect password.</div>
         </div>
         <button class="btn btn-primary btn-full" id="btnEnter" onclick="enterApp()" disabled>Enter Voting</button>
       </div>
@@ -676,6 +785,7 @@ window.JSONBIN_CONFIGURED = true;
       </div>
       <div class="tab-bar">
         <button class="tab active" id="tabVote" onclick="switchTab('vote')">Vote</button>
+        <button class="tab" id="tabTimeline" onclick="switchTab('timeline')">Schedule</button>
       </div>
       <div class="filter-row" id="locationFilter" style="display:none"></div>
 
@@ -690,6 +800,8 @@ window.JSONBIN_CONFIGURED = true;
 
       <!-- Comments panel (admin-only, hidden for voters) -->
       <div id="panelComments" style="display:none"></div>
+      <!-- Schedule / Timeline panel -->
+      <div id="panelTimeline" style="display:none"><div id="timelineContent"></div></div>
     </div>
   </div>
 
@@ -741,6 +853,16 @@ window.JSONBIN_CONFIGURED = true;
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
+      <div class="modal-info" id="modalTeamInfo" style="display:none">
+        <div id="modalInfoTopicWrap" style="display:none">
+          <div class="modal-info-label">Topic</div>
+          <div class="modal-info-topic" id="modalInfoTopic"></div>
+        </div>
+        <div id="modalInfoParticipantsWrap" style="display:none">
+          <div class="modal-info-label">Participants</div>
+          <div class="modal-info-participants" id="modalInfoParticipants"></div>
+        </div>
+      </div>
       <div class="criterion">
         <div class="criterion-row">
           <div><span class="criterion-name">AI Innovation</span> <span class="criterion-weight">40%</span></div>
@@ -782,6 +904,8 @@ window.JSONBIN_CONFIGURED = true;
 
 // ── CONFIG ────────────────────────────────────────────────
 var ADMIN_IDS = ['i774309'];
+var ADMIN_PASSWORD = '331134';
+var SAPID_RE = /^[A-Za-z0-9._-]{2,32}$/;
 
 var SHOWCASE_BLOCKS = [
   {id:'b1', label:'Block 1', color:'#2356CA', bg:'#eaeefc', range:[1,5]},
@@ -799,10 +923,22 @@ function blockOf(n) {
     var b=SHOWCASE_BLOCKS[i];
     if (n>=b.range[0]&&n<=b.range[1]) return b;
   }
+  // Fallback so callers never crash on unknown team numbers
+  return SHOWCASE_BLOCKS[SHOWCASE_BLOCKS.length-1];
 }
 
 // teamTopics: {teamId: topicString} — stored inside allVotesData._topics
 var teamTopics = {};
+
+// ── EXCEL DATA ─────────────────────────────────────────────
+var SHOWCASE_TIMELINE = [{"type": "date", "date": "July 14, 2026"}, {"type": "team", "block": "Block 1", "num": 1, "topic": "Designing Multi-Agent Systems with Hand-off for GRC Use Cases", "participants": ["Pucheng Wang", "Miaolan Zhou", "Justin Tang", "Paris Wan", "Jintong Liu"]}, {"type": "team", "block": "Block 1", "num": 2, "topic": "AI Agents Enabling Data-Driven Decisions via Natural Language", "participants": ["Jintong Liu", "Zichang Zhou"]}, {"type": "team", "block": "Block 1", "num": 3, "topic": "From search to insight: AI Agent for Company Research", "participants": ["Serena Lu"]}, {"type": "team", "block": "Block 1", "num": 4, "topic": "The Vibe Approach to SAP Code-Based Agents", "participants": ["Jixiang Wang"]}, {"type": "team", "block": "Block 1", "num": 5, "topic": "AI Agents for FSCM: From Operations to Insights", "participants": ["Oliver Gu"]}, {"type": "break", "label": "20 Min Break"}, {"type": "team", "block": "Block 2", "num": 6, "topic": "AI In Design Practices", "participants": ["Rowan Zhou"]}, {"type": "team", "block": "Block 2", "num": 7, "topic": "AI for ABAP Development: Promise, Friction, and Reality", "participants": ["Chris Yin"]}, {"type": "team", "block": "Block 2", "num": 8, "topic": "Troubleshooting", "participants": ["Lynne Liu"]}, {"type": "team", "block": "Block 2", "num": 9, "topic": "AI Driven E2E Test", "participants": ["Wenjun Du", "Qizheng Zhang", "Jimmy Wang", "Shupeng He", "Kashing Li"]}, {"type": "team", "block": "Block 2", "num": 10, "topic": "Plugin to Pipeline: AI Engineering Workflow", "participants": ["Evan Zhang"]}, {"type": "break", "label": "Lunch Break -13:30"}, {"type": "team", "block": "Block 3", "num": 11, "topic": "Project Meeting Management in Business Contexts", "participants": ["Yichen Liu", "Zander Sun", "Flora Ma", "Jean Wang"]}, {"type": "team", "block": "Block 3", "num": 12, "topic": "Plugin Sharing for Accelerating the Development Workflow", "participants": ["Mike Zhang", "Xue Cao"]}, {"type": "team", "block": "Block 3", "num": 13, "topic": "Document Migration Assistant", "participants": ["Emma He", "Alex Liu"]}, {"type": "team", "block": "Block 3", "num": 14, "topic": "Joule Studio Application in Business Scenarios", "participants": ["Flora Ma", "Miranda Hou", "Bella Wang", "Starry Zhong"]}, {"type": "break", "label": "20 Min Break"}, {"type": "team", "block": "Block 4", "num": 15, "topic": "AI Boosts Productivity：A Practical Integration Walkthrough", "participants": ["Randon Wang"]}, {"type": "team", "block": "Block 4", "num": 16, "topic": "D2SlideOS is All You Need: Automated BI Reporting​", "participants": ["Aiden Yang"]}, {"type": "team", "block": "Block 4", "num": 17, "topic": "Co-weaver: From Chaos to WBS", "participants": ["Xiaolu Wang", "Remy Guo"]}, {"type": "team", "block": "Block 4", "num": 18, "topic": "Notion to Motion：PRD Generator", "participants": ["Miranda Hou", "Bella Wang"]}, {"type": "break", "label": "20 Min Break"}, {"type": "team", "block": "Block 5", "num": 19, "topic": "AI-Assisted Cost Variance Root Cause Analysis", "participants": ["Kyrie Yu"]}, {"type": "team", "block": "Block 5", "num": 20, "topic": "AI assistant for GTT model", "participants": ["Lucy Xu", "Leyan Han", "Yuanmou Ju"]}, {"type": "team", "block": "Block 5", "num": 21, "topic": "product process analysis ai", "participants": ["Dingbo Zhong", "Yuanmou Ju"]}, {"type": "team", "block": "Block 5", "num": 22, "topic": "Margin Analysis Agent(What If Scenario)", "participants": ["Chloe Lu"]}, {"type": "break", "label": "20 Min Break"}, {"type": "team", "block": "Block 6", "num": 23, "topic": "Joule of All Trades: Integration with different code-based agents", "participants": ["Michael Hu", "Harlan Guo"]}, {"type": "team", "block": "Block 6", "num": 24, "topic": "AI Innovation on Commerce", "participants": ["Alex Zhang", "Corax Zhang", "Zhengyu Zhan", "Bessie Chen"]}, {"type": "team", "block": "Block 6", "num": 25, "topic": "Turning Implicit Thinking into Scalable AI Workflows", "participants": ["Tristan Man", "Zander Sun", "Bingning Cui", "Juliane Ma"]}, {"type": "team", "block": "Block 6", "num": 26, "topic": "Start your Agent Assistant in SAP Workflow", "participants": ["Zongpeng Li", "Cindy Pan"]}, {"type": "team", "block": "Block 6", "num": 27, "topic": "AI-Driven BO Exposure", "participants": ["Kaixun Huang"]}, {"type": "date", "date": "July 15, 2026"}, {"type": "team", "block": "Block 7", "num": 28, "topic": "AgentHub — IM NatureLangage Dev Partner", "participants": ["Adam Zhang", "Chenhui Wang", "Lvsheng Wu", "Pan Liu", "Yuxuan Feng"]}, {"type": "team", "block": "Block 7", "num": 29, "topic": "Interact & Integrate: Two Faces of AI", "participants": ["Nemotte Jin"]}, {"type": "team", "block": "Block 7", "num": 30, "topic": "AI on Duty: Agentic Support for On-Call Engineers", "participants": ["Sina Li"]}, {"type": "break", "label": "20 Min Break"}, {"type": "team", "block": "Block 8", "num": 31, "topic": "Agentic Multimodal RAG for Product Evolution Intelligence", "participants": ["Yuhang Cao", "ChunYi Yang", "Alina Chen", "Miyue Chen"]}, {"type": "team", "block": "Block 8", "num": 32, "topic": "Document Grounding for Code-Based Agents", "participants": ["Shijie Lu"]}, {"type": "team", "block": "Block 8", "num": 33, "topic": "PRD-to-Web Design", "participants": ["Yoona Zheng", "Zander Sun", "Leo Chen"]}, {"type": "break", "label": "Lunch Break -13:30"}];
+var HACKATHON_TIMELINE = [{"type": "date", "date": "July 15, 2026"}, {"type": "team", "block": "Block 1", "time": "13:30-13:40", "name": "BJ 1"}, {"type": "team", "block": "Block 1", "time": "13:40-13:50", "name": "BJ 2"}, {"type": "team", "block": "Block 1", "time": "13:50-14:00", "name": "BJ 3"}, {"type": "team", "block": "Block 1", "time": "14:00-14:10", "name": "DL 1"}, {"type": "team", "block": "Block 1", "time": "14:10-14:20", "name": "DL 2"}, {"type": "break", "label": "20 Min Break"}, {"type": "team", "block": "Block 2", "time": "14:40-14:50", "name": "DL 3"}, {"type": "team", "block": "Block 2", "time": "14:50-15:00", "name": "CD 1"}, {"type": "team", "block": "Block 2", "time": "15:00-15:10", "name": "CD 2"}, {"type": "team", "block": "Block 2", "time": "15:10-15:20", "name": "CD 3"}, {"type": "break", "label": "20 Min Break"}, {"type": "team", "block": "Block 3", "time": "15:40-15:50", "name": "SH 1"}, {"type": "team", "block": "Block 3", "time": "15:50-16:00", "name": "SH 2"}, {"type": "team", "block": "Block 3", "time": "16:00-16:10", "name": "SH 3"}, {"type": "team", "block": "Block 3", "time": "16:10-16:20", "name": "SH 4"}, {"type": "date", "date": "July 16, 2026"}, {"type": "team", "block": "Block 4", "time": "10:00-10:10", "name": "SH 5"}, {"type": "team", "block": "Block 4", "time": "10:10-10:20", "name": "SH 6"}, {"type": "team", "block": "Block 4", "time": "10:20-10:30", "name": "SH 7"}, {"type": "team", "block": "Block 4", "time": "10:30-10:40", "name": "SH 8"}, {"type": "break", "label": "Lunch Break -13:30"}, {"type": "team", "block": "Block 5", "time": "13:30-13:40", "name": "SH 9"}, {"type": "team", "block": "Block 5", "time": "13:40-13:50", "name": "SH 10"}, {"type": "team", "block": "Block 5", "time": "13:50-14:00", "name": "SH 11"}, {"type": "team", "block": "Block 5", "time": "14:00-14:10", "name": "SH 12"}];
+var TEAM_DATA = {"team-1":{"topic":"Designing Multi-Agent Systems with Hand-off for GRC Use Cases","participants":[{"name":"Pucheng Wang","sapId":"I604743"},{"name":"Miaolan Zhou","sapId":"I778362"},{"name":"Justin Tang","sapId":"I604738"},{"name":"Paris Wan","sapId":"I604749"},{"name":"Jintong Liu","sapId":"I778296"}]},"team-2":{"topic":"AI Agents Enabling Data-Driven Decisions via Natural Language","participants":[{"name":"Jintong Liu","sapId":"I778296"},{"name":"Zichang Zhou","sapId":"I778689"}]},"team-3":{"topic":"From search to insight: AI Agent for Company Research","participants":[{"name":"Serena Lu","sapId":"I605233"}]},"team-4":{"topic":"The Vibe Approach to SAP Code-Based Agents","participants":[{"name":"Jixiang Wang","sapId":"I604734"}]},"team-5":{"topic":"AI Agents for FSCM: From Operations to Insights","participants":[{"name":"Oliver Gu","sapId":"I605214"}]},"team-6":{"topic":"AI In Design Practices","participants":[{"name":"Rowan Zhou","sapId":"I757047"}]},"team-7":{"topic":"AI for ABAP Development: Promise, Friction, and Reality","participants":[{"name":"Chris Yin","sapId":"I604727"}]},"team-8":{"topic":"Troubleshooting","participants":[{"name":"Lynne Liu","sapId":"I604747"}]},"team-9":{"topic":"AI Driven E2E Test","participants":[{"name":"Wenjun Du","sapId":"I604754"},{"name":"Qizheng Zhang","sapId":"I604746"},{"name":"Jimmy Wang","sapId":"I604728"},{"name":"Shupeng He","sapId":"I605103"},{"name":"Kashing Li","sapId":"I605212"}]},"team-10":{"topic":"Plugin to Pipeline: AI Engineering Workflow","participants":[{"name":"Evan Zhang","sapId":"I604733"}]},"team-11":{"topic":"Project Meeting Management in Business Contexts","participants":[{"name":"Yichen Liu","sapId":"I765069"},{"name":"Zander Sun","sapId":"I774559"},{"name":"Flora Ma","sapId":"I605241"},{"name":"Jean Wang","sapId":"I605236"}]},"team-12":{"topic":"Plugin Sharing for Accelerating the Development Workflow","participants":[{"name":"Mike Zhang","sapId":"I758469"},{"name":"Xue Cao","sapId":"I605223"}]},"team-13":{"topic":"Document Migration Assistant","participants":[{"name":"Emma He","sapId":"I605228"},{"name":"Alex Liu","sapId":"I605227"}]},"team-14":{"topic":"Joule Studio Application in Business Scenarios","participants":[{"name":"Flora Ma","sapId":"I605241"},{"name":"Miranda Hou","sapId":"I605234"},{"name":"Bella Wang","sapId":"I605235"},{"name":"Starry Zhong","sapId":"I605237"}]},"team-15":{"topic":"AI Boosts Productivity：A Practical Integration Walkthrough","participants":[{"name":"Randon Wang","sapId":"I605222"}]},"team-16":{"topic":"D2SlideOS is All You Need: Automated BI Reporting​","participants":[{"name":"Aiden Yang","sapId":"I605232"}]},"team-17":{"topic":"Co-weaver: From Chaos to WBS","participants":[{"name":"Xiaolu Wang","sapId":"I605229"},{"name":"Remy Guo","sapId":"I605230"}]},"team-18":{"topic":"Notion to Motion：PRD Generator","participants":[{"name":"Miranda Hou","sapId":"I605234"},{"name":"Bella Wang","sapId":"I605235"}]},"team-19":{"topic":"AI-Assisted Cost Variance Root Cause Analysis","participants":[{"name":"Kyrie Yu","sapId":"I605210"}]},"team-20":{"topic":"AI assistant for GTT model","participants":[{"name":"Lucy Xu","sapId":"I604731"},{"name":"Leyan Han","sapId":"I604729"},{"name":"Yuanmou Ju","sapId":"I605215"}]},"team-21":{"topic":"product process analysis ai","participants":[{"name":"Dingbo Zhong","sapId":"I605218"},{"name":"Yuanmou Ju","sapId":"I605215"}]},"team-22":{"topic":"Margin Analysis Agent(What If Scenario)","participants":[{"name":"Chloe Lu","sapId":"I604736"}]},"team-23":{"topic":"Joule of All Trades: Integration with different code-based agents","participants":[{"name":"Michael Hu","sapId":"I604724"},{"name":"Harlan Guo","sapId":"I604748"}]},"team-24":{"topic":"AI Innovation on Commerce","participants":[{"name":"Alex Zhang","sapId":"I605100"},{"name":"Corax Zhang","sapId":"I605102"},{"name":"Zhengyu Zhan","sapId":"I605217"},{"name":"Bessie Chen","sapId":"I768434"}]},"team-25":{"topic":"Turning Implicit Thinking into Scalable AI Workflows","participants":[{"name":"Tristan Man","sapId":"I774104"},{"name":"Zander Sun","sapId":"I774559"},{"name":"Bingning Cui","sapId":"I774676"},{"name":"Juliane Ma","sapId":"I605239"}]},"team-26":{"topic":"Start your Agent Assistant in SAP Workflow","participants":[{"name":"Zongpeng Li","sapId":"I605219"},{"name":"Cindy Pan","sapId":"I604737"}]},"team-27":{"topic":"AI-Driven BO Exposure","participants":[{"name":"Kaixun Huang","sapId":"I604730"}]},"team-28":{"topic":"AgentHub — IM NatureLangage Dev Partner","participants":[{"name":"Adam Zhang","sapId":"I604741"},{"name":"Chenhui Wang","sapId":"I604732"},{"name":"Lvsheng Wu","sapId":"I604726"},{"name":"Pan Liu","sapId":"I605224"},{"name":"Yuxuan Feng","sapId":"I778387"}]},"team-29":{"topic":"Interact & Integrate: Two Faces of AI","participants":[{"name":"Nemotte Jin","sapId":"I765202"}]},"team-30":{"topic":"AI on Duty: Agentic Support for On-Call Engineers","participants":[{"name":"Sina Li","sapId":"I778675"}]},"team-31":{"topic":"Agentic Multimodal RAG for Product Evolution Intelligence","participants":[{"name":"Yuhang Cao","sapId":"I778688"},{"name":"ChunYi Yang","sapId":"I584771"},{"name":"Alina Chen","sapId":"I778232"},{"name":"Miyue Chen","sapId":"I778692"}]},"team-32":{"topic":"Document Grounding for Code-Based Agents","participants":[{"name":"Shijie Lu","sapId":"I778284"}]},"team-33":{"topic":"PRD-to-Web Design","participants":[{"name":"Yoona Zheng","sapId":"I778694"},{"name":"Zander Sun","sapId":"I774559"},{"name":"Leo Chen","sapId":"I774530"}]}};
+// Helper: get participant name whether entry is a string (legacy) or {name,sapId}
+function pName(p){return p&&typeof p==='object'?p.name:String(p||'');}
+function pSap(p){return p&&typeof p==='object'?(p.sapId||''):'';}
+// Pre-fill topics from Excel on first load
+Object.keys(TEAM_DATA).forEach(function(tid){ teamTopics[tid]=TEAM_DATA[tid].topic; });
 
 var SHOWCASE_TEAMS = (function() {
   var arr=[];
@@ -857,11 +993,19 @@ function jbGet() {
 }
 function jbPut(data) {
   if (!window.JSONBIN_BIN_ID) {
+    // First save creates a bin — the ID must then be shared with all clients
+    // (via the JSONBIN_BIN_ID constant) or each client will silently create its
+    // own bin and votes will split across bins. Warn loudly.
+    console.warn('[voting] Creating new JSONBin — set window.JSONBIN_BIN_ID in the HTML to this ID for shared sync.');
     return fetch('https://api.jsonbin.io/v3/b',{method:'POST',
       headers:{'Content-Type':'application/json','X-Master-Key':window.JSONBIN_API_KEY,'X-Bin-Name':'sap-ai-day-votes'},
       body:JSON.stringify(data)})
       .then(function(r){if(!r.ok)throw new Error();return r.json();})
-      .then(function(j){window.JSONBIN_BIN_ID=j.metadata.id;localStorage.setItem('sap_bin_id',j.metadata.id);});
+      .then(function(j){
+        window.JSONBIN_BIN_ID=j.metadata.id;
+        localStorage.setItem('sap_bin_id',j.metadata.id);
+        console.warn('[voting] Created bin id:', j.metadata.id);
+      });
   }
   return fetch('https://api.jsonbin.io/v3/b/'+window.JSONBIN_BIN_ID,{method:'PUT',
     headers:{'Content-Type':'application/json','X-Master-Key':window.JSONBIN_API_KEY},
@@ -870,7 +1014,32 @@ function jbPut(data) {
 }
 function loadRemote() {
   if (!window.JSONBIN_CONFIGURED) return Promise.resolve();
-  return jbGet().then(function(d){if(d){allVotesData=d;synced=true;}}).catch(function(){});
+  return jbGet().then(function(d){
+    if(!d) return;
+    // Merge remote into local so offline votes aren't clobbered.
+    // Per-team votes: remote wins on conflict (server is source of truth),
+    // but local-only voters/votes are preserved.
+    mergeVotesInto(allVotesData, d);
+    synced=true;
+  }).catch(function(){});
+}
+function mergeVotesInto(local, remote) {
+  Object.keys(remote||{}).forEach(function(ch){
+    if(ch==='_topics') { local._topics=remote._topics; return; }
+    local[ch]=local[ch]||{};
+    Object.keys(remote[ch]||{}).forEach(function(sid){
+      var rv=remote[ch][sid];
+      if(!local[ch][sid]) { local[ch][sid]=rv; return; }
+      // Voter exists both sides — take remote name/role, merge votes (remote wins).
+      local[ch][sid].name=rv.name||local[ch][sid].name;
+      local[ch][sid].role=rv.role||local[ch][sid].role;
+      local[ch][sid].votes=local[ch][sid].votes||{};
+      Object.keys(rv.votes||{}).forEach(function(tid){
+        local[ch][sid].votes[tid]=rv.votes[tid];
+      });
+    });
+  });
+  saveLocal();
 }
 function saveRemote() {
   if (!window.JSONBIN_CONFIGURED) return Promise.resolve();
@@ -879,16 +1048,44 @@ function saveRemote() {
 
 // ── LOCAL STORAGE ─────────────────────────────────────────
 function loadLocal() {
-  var sid=localStorage.getItem('sap_bin_id');
-  if(sid&&!window.JSONBIN_BIN_ID) window.JSONBIN_BIN_ID=sid;
-  try{var s=localStorage.getItem('sap_votes');if(s)allVotesData=JSON.parse(s);}catch(e){}
+  try {
+    var sid=localStorage.getItem('sap_bin_id');
+    if(sid&&!window.JSONBIN_BIN_ID) window.JSONBIN_BIN_ID=sid;
+    var s=localStorage.getItem('sap_votes');
+    if(s) {
+      var parsed=JSON.parse(s);
+      if(parsed && typeof parsed==='object') allVotesData=parsed;
+    }
+    // Restore topics if saved
+    if(allVotesData && allVotesData._topics && typeof allVotesData._topics==='object') {
+      Object.keys(allVotesData._topics).forEach(function(k){ teamTopics[k]=allVotesData._topics[k]; });
+    }
+  } catch(e) {
+    // Corrupt storage — start clean rather than crash
+    allVotesData={};
+  }
 }
-function saveLocal() { localStorage.setItem('sap_votes',JSON.stringify(allVotesData)); }
+function saveLocal() {
+  try {
+    // Persist topics into the same blob so admin edits survive reloads
+    allVotesData._topics=teamTopics;
+    localStorage.setItem('sap_votes',JSON.stringify(allVotesData));
+  } catch(e) {}
+}
+
+function clampScore(v){v=+v; if(!isFinite(v)) v=5; return Math.min(10,Math.max(1,Math.round(v)));}
 
 function persistVote(channel,sapId,userData,teamId,scores,comment) {
   if(!allVotesData[channel]) allVotesData[channel]={};
   if(!allVotesData[channel][sapId]) allVotesData[channel][sapId]={name:userData.name,role:userData.role,votes:{}};
-  allVotesData[channel][sapId].votes[teamId]=Object.assign({},scores,{comment:comment});
+  // Trust nothing coming from the DOM — clamp on the write path
+  var safe={
+    aiInnovation:  clampScore(scores.aiInnovation),
+    businessImpact:clampScore(scores.businessImpact),
+    presentation:  clampScore(scores.presentation),
+    comment: String(comment||'').slice(0,2000)
+  };
+  allVotesData[channel][sapId].votes[teamId]=safe;
   saveLocal();
   if(window.JSONBIN_CONFIGURED) return saveRemote();
   return Promise.resolve();
@@ -926,19 +1123,53 @@ function selectRole(r) {
   document.getElementById('roleManager').classList.toggle('selected',r==='manager');
   checkBtn();
 }
+function updateAdminPwVisibility() {
+  var sapId=(document.getElementById('inputSapId').value||'').trim().toLowerCase();
+  var showPw=isAdmin(sapId);
+  document.getElementById('adminPwGroup').style.display=showPw?'block':'none';
+  if(!showPw) {
+    document.getElementById('adminPwHint').style.display='none';
+    document.getElementById('inputAdminPw').value='';
+  }
+}
+function validateSapId(sapId) {
+  return SAPID_RE.test(sapId);
+}
 function checkBtn() {
-  document.getElementById('btnEnter').disabled=
-    !(document.getElementById('inputName').value.trim()&&
-      document.getElementById('inputSapId').value.trim()&&
-      user&&user.role);
+  var name=document.getElementById('inputName').value.trim();
+  var sapIdRaw=document.getElementById('inputSapId').value.trim();
+  var hint=document.getElementById('sapIdHint');
+  var validSap = sapIdRaw==='' || validateSapId(sapIdRaw);
+  hint.style.display = (sapIdRaw!==''&&!validSap) ? 'block' : 'none';
+  var ok = !!(name && sapIdRaw && validSap && user && user.role);
+  // Admin extras: password field must be filled (checked again on submit)
+  if(ok && isAdmin(sapIdRaw.toLowerCase())) {
+    ok = !!document.getElementById('inputAdminPw').value;
+  }
+  document.getElementById('btnEnter').disabled = !ok;
 }
 document.getElementById('inputName').addEventListener('input',checkBtn);
-document.getElementById('inputSapId').addEventListener('input',checkBtn);
+document.getElementById('inputSapId').addEventListener('input',function(){updateAdminPwVisibility();checkBtn();});
+document.getElementById('inputAdminPw').addEventListener('input',checkBtn);
 
 function enterApp() {
   var name=document.getElementById('inputName').value.trim();
   var sapId=document.getElementById('inputSapId').value.trim().toLowerCase();
   if(!name||!sapId||!user||!user.role) return;
+  if(!validateSapId(sapId)) {
+    document.getElementById('sapIdHint').style.display='block';
+    return;
+  }
+  // Admin path: require the shared admin password
+  if(isAdmin(sapId)) {
+    var pw=document.getElementById('inputAdminPw').value;
+    if(pw!==ADMIN_PASSWORD) {
+      document.getElementById('adminPwHint').style.display='block';
+      document.getElementById('inputAdminPw').value='';
+      return;
+    }
+    sessionStorage.setItem('sap_admin_ok','1');
+  }
   user={name:name,sapId:sapId,role:user.role};
   sessionStorage.setItem('sap_user',JSON.stringify(user));
   var btn=document.getElementById('btnEnter');
@@ -952,6 +1183,7 @@ function enterApp() {
 
 function logout() {
   sessionStorage.removeItem('sap_user');
+  sessionStorage.removeItem('sap_admin_ok');
   user=null; currentChannel=null;
   switchView('viewLanding');
   document.getElementById('shellUser').style.display='none';
@@ -960,7 +1192,14 @@ function logout() {
 function restoreSession() {
   var s=sessionStorage.getItem('sap_user');
   if(!s) return;
-  user=JSON.parse(s);
+  try { user=JSON.parse(s); } catch(e) { sessionStorage.removeItem('sap_user'); return; }
+  if(!user||!user.sapId) { sessionStorage.removeItem('sap_user'); return; }
+  // Admin sessions must have been unlocked with password this session
+  if(isAdmin(user.sapId) && sessionStorage.getItem('sap_admin_ok')!=='1') {
+    sessionStorage.removeItem('sap_user');
+    user=null;
+    return;
+  }
   loadRemote().then(function(){
     if(isAdmin(user.sapId)) { showShellUser(); goToAdmin(); }
     else showChannelView();
@@ -1008,10 +1247,15 @@ function renderChannelCards() {
     var div=document.createElement('div');
     div.className='channel-card'+(open?'':' disabled');
     if(open){(function(k){div.onclick=function(){enterChannel(k);};})(key);}
+    // Only show open/close times if they're meaningful (not the sentinel 2000/2099 range)
+    var showDates = ch.start.getFullYear() > 2010 && ch.end.getFullYear() < 2090;
+    var metaExtra = showDates
+      ? ' &nbsp;·&nbsp; Opens '+fmtDate(ch.start)+' &nbsp;·&nbsp; Closes '+fmtDate(ch.end)
+      : '';
     div.innerHTML=
-      '<div class="ch-icon">'+ch.icon+'</div>'+
-      '<div class="ch-name">'+ch.label+'</div>'+
-      '<div class="ch-meta">'+ch.teams.length+' teams &nbsp;·&nbsp; Opens '+fmtDate(ch.start)+' &nbsp;·&nbsp; Closes '+fmtDate(ch.end)+'</div>'+
+      '<div class="ch-icon">'+esc(ch.icon)+'</div>'+
+      '<div class="ch-name">'+esc(ch.label)+'</div>'+
+      '<div class="ch-meta">'+ch.teams.length+' teams'+metaExtra+'</div>'+
       '<div class="ch-pill '+statusCls+'"><div class="ch-pill-dot'+(open?' live':'')+'"></div>'+statusText+'</div>';
     c.appendChild(div);
   });
@@ -1040,10 +1284,15 @@ function updateStatusDots() {
 function switchTab(tab) {
   currentTab=tab;
   document.getElementById('tabVote').classList.toggle('active',tab==='vote');
+  var ttl=document.getElementById('tabTimeline');
+  if(ttl) ttl.classList.toggle('active',tab==='timeline');
   document.getElementById('panelVote').style.display=tab==='vote'?'block':'none';
   document.getElementById('panelComments').style.display=tab==='comments'?'block':'none';
+  var ptl=document.getElementById('panelTimeline');
+  if(ptl) ptl.style.display=tab==='timeline'?'block':'none';
   if(tab==='vote') renderTeams();
   if(tab==='comments') renderCommentsContent();
+  if(tab==='timeline') renderTimeline();
 }
 
 // ── FILTER BAR ────────────────────────────────────────────
@@ -1075,8 +1324,9 @@ function renderTeams() {
       var teams=stats.filter(function(t){return t.block===blk.id;});
       var hdr=document.createElement('div');
       hdr.className='block-header';
-      hdr.innerHTML='<div class="block-dot" style="background:'+blk.dot+'"></div>'+blk.label+
-        ' <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">Teams '+blk.range[0]+'–'+blk.range[1]+'</span>';
+      hdr.style.background=blk.color;
+      hdr.innerHTML='<div class="block-dot" style="background:'+blk.color+'"></div>'+esc(blk.label)+
+        ' <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:.85">Teams '+blk.range[0]+'&ndash;'+blk.range[1]+'</span>';
       content.appendChild(hdr);
       var grid=document.createElement('div');
       grid.className='team-grid';
@@ -1096,13 +1346,27 @@ function makeTeamCard(team) {
   var div=document.createElement('div');
   div.className='team-card'+(team.myVote?' voted':'');
   (function(id){div.onclick=function(){openModal(id);};})(team.id);
-  var pipColor='';
-  if(team.location) pipColor=CITY_COLORS[team.location];
-  else if(team.blockDot) pipColor=team.blockDot;
+
+  var accentColor, accentBg, tagLabel='';
+  if(team.location){
+    var cm=CITY_META[team.location];
+    accentColor=cm.color; accentBg=cm.bg; tagLabel=team.location;
+  } else if(team.block){
+    var blk=SHOWCASE_BLOCKS.filter(function(b){return b.id===team.block;})[0];
+    accentColor=blk.color; accentBg=blk.bg; tagLabel=blk.label;
+  }
+  div.style.setProperty('--card-accent', accentColor);
+
+  var topic=teamTopics[team.id]||'';
+  var td=TEAM_DATA[team.id];
+  var participants=td&&td.participants?td.participants:[];
+
   div.innerHTML=
-    (team.myVote?'<div class="voted-pip"></div>':'')+
-    '<div class="team-card-name">'+team.name+'</div>'+
-    (pipColor?'<div class="city-pip" style="background:'+pipColor+'"></div>':'');
+    (team.myVote?'<div class="voted-check">&#10003; Voted</div>':'')+
+    '<div class="team-card-city" style="background:'+esc(accentBg)+';color:'+esc(accentColor)+'">'+esc(tagLabel)+'</div>'+
+    '<div class="team-card-name">'+esc(team.name)+'</div>'+
+    (topic?'<div class="team-card-topic">'+esc(topic)+'</div>':'')+
+    (participants.length?'<div style="font-size:11px;color:var(--text3);margin-top:5px;line-height:1.6">'+participants.map(function(p){return esc(pName(p));}).join(' &middot; ')+'</div>':'');
   return div;
 }
 
@@ -1110,10 +1374,11 @@ function makeTeamCard(team) {
 function renderCommentsContent() {
   if(!currentChannel) return;
   var stats=teamStats(currentChannel);
-  if(currentChannel==='hackathon'&&currentLocFilterComments!=='ALL')
-    stats=stats.filter(function(t){return t.location===currentLocFilterComments;});
+  if(currentChannel==='hackathon'&&currentLocFilter!=='ALL')
+    stats=stats.filter(function(t){return t.location===currentLocFilter;});
 
   var el=document.getElementById('commentsContent');
+  if(!el) return;
   el.innerHTML='';
 
   // Group by block for showcase
@@ -1124,7 +1389,8 @@ function renderCommentsContent() {
       if(!hasComments) return;
       var hdr=document.createElement('div');
       hdr.className='block-header';
-      hdr.innerHTML='<div class="block-dot" style="background:'+blk.dot+'"></div>'+blk.label;
+      hdr.style.background=blk.color;
+      hdr.innerHTML='<div class="block-dot" style="background:'+blk.color+'"></div>'+esc(blk.label);
       el.appendChild(hdr);
       teams.forEach(function(t){if(t.comments.length) el.appendChild(makeCommentsBlock(t));});
     });
@@ -1140,12 +1406,12 @@ function renderCommentsContent() {
 function makeCommentsBlock(team) {
   var wrap=document.createElement('div');
   wrap.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:hidden;';
-  var dotColor=team.location?CITY_COLORS[team.location]:(team.blockDot||'var(--text3)');
+  var dotColor=team.location?CITY_COLORS[team.location]:(team.blockColor||'var(--text3)');
   wrap.innerHTML=
     '<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">'+
-      '<div style="width:8px;height:8px;border-radius:50%;background:'+dotColor+';flex-shrink:0;"></div>'+
-      '<span style="font-weight:600;font-size:14px">'+team.name+'</span>'+
-      (team.location?'<span class="city-tag '+team.location+'">'+team.location+'</span>':'')+
+      '<div style="width:8px;height:8px;border-radius:50%;background:'+esc(dotColor)+';flex-shrink:0;"></div>'+
+      '<span style="font-weight:600;font-size:14px">'+esc(team.name)+'</span>'+
+      (team.location?'<span class="city-tag '+esc(team.location)+'">'+esc(team.location)+'</span>':'')+
       '<span style="font-size:12px;color:var(--text3);margin-left:auto">'+team.comments.length+' comment'+(team.comments.length!==1?'s':'')+'</span>'+
     '</div>'+
     '<div style="padding:12px 16px;">'+
@@ -1153,13 +1419,87 @@ function makeCommentsBlock(team) {
         return '<div class="comment-item">'+
           '<div class="comment-meta">'+
             '<span style="font-weight:600;color:var(--text)">'+esc(c.name)+'</span>'+
-            '<span class="badge '+(c.role==='student'?'badge-student':'badge-manager')+'">'+ROLE_LABELS[c.role]+'</span>'+
+            '<span class="badge '+(c.role==='student'?'badge-student':'badge-manager')+'">'+esc(ROLE_LABELS[c.role]||c.role)+'</span>'+
           '</div>'+
           '<div class="comment-text">'+esc(c.comment)+'</div>'+
         '</div>';
       }).join('')+
     '</div>';
   return wrap;
+}
+
+// ── TIMELINE RENDER ───────────────────────────────────────
+function renderTimeline() {
+  var el=document.getElementById('timelineContent');
+  if(!el) return;
+  var data=currentChannel==='showcase'?SHOWCASE_TIMELINE:HACKATHON_TIMELINE;
+  var votes=allVotesData[currentChannel]||{};
+  var myVotes=user&&votes[user.sapId]?votes[user.sapId].votes||{}:{};
+  var BLOCK_COLORS={
+    'Block 1':'#2356CA','Block 2':'#188918','Block 3':'#c67600','Block 4':'#bb0000',
+    'Block 5':'#6e3b7a','Block 6':'#0097a7','Block 7':'#805600','Block 8':'#2e7d32'
+  };
+  var CITY_CLR={Beijing:'#bb0000',Dalian:'#2356CA',Chengdu:'#e76500',Shanghai:'#188918'};
+  function entryColor(e){
+    if(currentChannel==='hackathon'){
+      var n=e.name||'';
+      if(n.indexOf('BJ')===0) return CITY_CLR.Beijing;
+      if(n.indexOf('DL')===0) return CITY_CLR.Dalian;
+      if(n.indexOf('CD')===0) return CITY_CLR.Chengdu;
+      if(n.indexOf('SH')===0) return CITY_CLR.Shanghai;
+    }
+    return BLOCK_COLORS[e.block]||'#556b82';
+  }
+  function entryId(e){
+    return currentChannel==='showcase'?'team-'+e.num:e.name.replace(/ /g,'-');
+  }
+  var curBlock=null;
+  var out='<div class="tl-wrap">';
+  data.forEach(function(e){
+    if(e.type==='date'){
+      out+='<div class="tl-date-header"><div class="tl-date-line"></div>'+esc(e.date)+'<div class="tl-date-line"></div></div>';
+      curBlock=null;
+    } else if(e.type==='break'){
+      var lbl=e.label.replace(/-([0-9])/,' $1').trim();
+      out+='<div class="tl-break"><div class="tl-break-line"></div>'+esc(lbl)+'<div class="tl-break-line"></div></div>';
+    } else if(e.type==='team'){
+      if(e.block&&e.block!==curBlock){
+        curBlock=e.block;
+        var bc=BLOCK_COLORS[e.block]||'#556b82';
+        out+='<div class="tl-block-label" style="background:'+bc+'">'+esc(e.block)+'</div>';
+      }
+      var tid=entryId(e);
+      var voted=!!myVotes[tid];
+      var color=entryColor(e);
+      out+='<div class="tl-item">';
+      if(currentChannel==='showcase'){
+        out+='<div class="tl-num" style="background:'+esc(color)+'" data-tl-open="'+esc(tid)+'">'+e.num+'</div>';
+      } else {
+        var tp=(e.time||'').split('-');
+        out+='<div class="tl-time" style="background:'+esc(color)+'" data-tl-open="'+esc(tid)+'">'+esc(tp[0]||'')+'</div>';
+      }
+      out+='<div class="tl-body'+(voted?' voted':'')+'" data-tl-open="'+esc(tid)+'">';
+      out+='<div class="tl-team-name">'+(currentChannel==='showcase'?'Team '+esc(e.num):esc(e.name));
+      if(voted) out+='<span class="tl-voted-badge">&#10003; Voted</span>';
+      out+='</div>';
+      if(currentChannel==='showcase'&&e.topic){
+        out+='<div class="tl-topic">'+esc(e.topic)+'</div>';
+        if(e.participants&&e.participants.length){
+          out+='<div class="tl-participants">';
+          e.participants.forEach(function(p){out+='<span class="tl-person">'+esc(pName(p))+'</span>';});
+          out+='</div>';
+        }
+      }
+      out+='</div></div>';
+    }
+  });
+  out+='</div>';
+  el.innerHTML=out;
+  // Delegate opens for the timeline (rebound on each render since innerHTML resets it)
+  el.querySelectorAll('[data-tl-open]').forEach(function(n){
+    n.style.cursor='pointer';
+    n.addEventListener('click', function(){ openModal(n.getAttribute('data-tl-open')); });
+  });
 }
 
 // ── MODAL ─────────────────────────────────────────────────
@@ -1174,9 +1514,37 @@ function openModal(teamId) {
   document.getElementById('modalTeamSub').textContent=
     team.location?team.location+' · '+CHANNELS[currentChannel].label:
     (team.blockLabel?team.blockLabel+' · '+CHANNELS[currentChannel].label:CHANNELS[currentChannel].label);
-  document.getElementById('sliderAI').value=mv?mv.aiInnovation:5;
-  document.getElementById('sliderBiz').value=mv?mv.businessImpact:5;
-  document.getElementById('sliderPres').value=mv?mv.presentation:5;
+
+  // Populate topic + participants (showcase only — hackathon has none in TEAM_DATA)
+  var infoBox=document.getElementById('modalTeamInfo');
+  var td=TEAM_DATA[teamId];
+  var effectiveTopic=teamTopics[teamId] || (td?td.topic:'') || '';
+  var participants=td&&td.participants?td.participants:[];
+  var topicWrap=document.getElementById('modalInfoTopicWrap');
+  var partsWrap=document.getElementById('modalInfoParticipantsWrap');
+  if(effectiveTopic) {
+    topicWrap.style.display='block';
+    document.getElementById('modalInfoTopic').textContent=effectiveTopic;
+  } else {
+    topicWrap.style.display='none';
+  }
+  if(participants.length) {
+    partsWrap.style.display='block';
+    document.getElementById('modalInfoParticipants').innerHTML =
+      participants.map(function(p){
+        var name=pName(p), sap=pSap(p);
+        return '<span class="modal-info-person">'+esc(name)+
+          (sap?' <span class="modal-info-person-sap">'+esc(sap)+'</span>':'')+
+        '</span>';
+      }).join('');
+  } else {
+    partsWrap.style.display='none';
+  }
+  infoBox.style.display=(effectiveTopic||participants.length)?'block':'none';
+
+  document.getElementById('sliderAI').value=mv?clampScore(mv.aiInnovation):5;
+  document.getElementById('sliderBiz').value=mv?clampScore(mv.businessImpact):5;
+  document.getElementById('sliderPres').value=mv?clampScore(mv.presentation):5;
   document.getElementById('inputComment').value=mv&&mv.comment?mv.comment:'';
   document.getElementById('btnSubmit').textContent=mv?'Update Score':'Submit Score';
   updateSliders();
@@ -1312,7 +1680,12 @@ function renderAdminLeaderboard() {
   renderAdminLocFilter();
   var stats=teamStats(adminChannel)
     .filter(function(t){return adminLocFilter==='ALL'||t.location===adminLocFilter;})
-    .sort(function(a,b){return b.score-a.score;});
+    .sort(function(a,b){
+      if(b.score!==a.score) return b.score-a.score;
+      // Stable tie-breaker: more voters first, then name
+      if(b.n!==a.n) return b.n-a.n;
+      return String(a.name).localeCompare(String(b.name));
+    });
 
   var el=document.getElementById('adminLeaderboard');
   if(stats.every(function(t){return t.score===0;})){
@@ -1323,18 +1696,17 @@ function renderAdminLeaderboard() {
     var rank=i+1;
     var rc=rank===1?'top1':rank===2?'top2':rank===3?'top3':'';
     var rl=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
-    var accentColor=team.location?CITY_COLORS[team.location]:(team.blockDot||'var(--blue)');
     var nameExtra=team.location
-      ?'<span class="city-tag '+team.location+'" style="margin-left:6px">'+team.location+'</span>'
-      :(team.blockLabel?'<span style="font-size:11px;color:var(--text3);margin-left:6px">'+team.blockLabel+'</span>':'');
+      ?'<span class="city-tag '+esc(team.location)+'" style="margin-left:6px">'+esc(team.location)+'</span>'
+      :(team.blockLabel?'<span style="font-size:11px;color:var(--text3);margin-left:6px">'+esc(team.blockLabel)+'</span>':'');
     return '<tr>'+
       '<td><span class="lb-rank-num '+rc+'">'+rl+'</span></td>'+
       '<td>'+
-        '<strong>'+team.name+'</strong>'+nameExtra+'<br>'+
+        '<strong>'+esc(team.name)+'</strong>'+nameExtra+'<br>'+
         '<span class="sub-scores">'+
-          'AI <span class="inline-bar"><span class="inline-bar-fill" style="width:'+team.avgAI*10+'%"></span></span> '+team.avgAI.toFixed(1)+
-          ' &nbsp; Biz <span class="inline-bar"><span class="inline-bar-fill" style="width:'+team.avgBiz*10+'%"></span></span> '+team.avgBiz.toFixed(1)+
-          ' &nbsp; Pres <span class="inline-bar"><span class="inline-bar-fill" style="width:'+team.avgPres*10+'%"></span></span> '+team.avgPres.toFixed(1)+
+          'AI <span class="inline-bar"><span class="inline-bar-fill" style="width:'+(team.avgAI*10)+'%"></span></span> '+team.avgAI.toFixed(1)+
+          ' &nbsp; Biz <span class="inline-bar"><span class="inline-bar-fill" style="width:'+(team.avgBiz*10)+'%"></span></span> '+team.avgBiz.toFixed(1)+
+          ' &nbsp; Pres <span class="inline-bar"><span class="inline-bar-fill" style="width:'+(team.avgPres*10)+'%"></span></span> '+team.avgPres.toFixed(1)+
         '</span>'+
       '</td>'+
       '<td style="color:var(--text3);font-size:12px">'+team.n+' vote'+(team.n!==1?'s':'')+'</td>'+
@@ -1351,33 +1723,35 @@ function renderAdminVoters() {
   if(!Object.keys(votes).length){
     el.innerHTML='<div class="empty"><div class="empty-icon">&#128101;</div>No voters yet</div>'; return;
   }
+  function safeKey(s){return String(s).replace(/\W/g,'_');}
   var rows=Object.keys(votes).map(function(sapId){
     var voter=votes[sapId];
     var vkeys=Object.keys(voter.votes||{});
     var avg=vkeys.length>0?vkeys.reduce(function(s,tid){return s+rawScore(voter.votes[tid]);},0)/vkeys.length:0;
-    var uid='vd-'+sapId.replace(/\W/g,'_');
-    var euid='ed-'+sapId.replace(/\W/g,'_');
+    var sk=safeKey(sapId);
+    var uid='vd-'+sk;
+    var euid='ed-'+sk;
     var detailRows=vkeys.map(function(tid){
       var v=voter.votes[tid],team=null;
       CHANNELS[adminChannel].teams.forEach(function(t){if(t.id===tid) team=t;});
       var tname=team?team.name:tid;
-      var duid='drow-'+sapId.replace(/\W/g,'_')+'-'+tid.replace(/\W/g,'_');
+      var duid='drow-'+sk+'-'+safeKey(tid);
       return '<div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:6px;">'+
         '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'+
           '<strong style="flex:1">'+esc(tname)+'</strong>'+
           '<span style="font-size:12px;color:var(--text2)">AI:'+v.aiInnovation+' Biz:'+v.businessImpact+' Pres:'+v.presentation+' &#8594; '+rawScore(v).toFixed(1)+'</span>'+
-          '<button class="btn btn-edit" onclick="adminToggleVoteEdit(''+duid+'')">Edit</button>'+
-          '<button class="btn btn-danger" onclick="adminDeleteVote(''+sapId+'',''+tid+'')">Delete</button>'+
+          '<button class="btn btn-edit" data-action="toggle-edit" data-target="'+esc(duid)+'">Edit</button>'+
+          '<button class="btn btn-danger" data-action="delete-vote" data-sapid="'+esc(sapId)+'" data-teamid="'+esc(tid)+'">Delete</button>'+
         '</div>'+
         (v.comment?'<div style="font-size:12px;color:var(--text2);margin-top:4px">'+esc(v.comment)+'</div>':'')+
-        '<div class="inline-edit-form" id="'+duid+'">'+
-          '<div class="inline-edit-row"><label>AI (1-10)</label><input class="inline-edit-input" id="'+duid+'-ai" type="number" min="1" max="10" value="'+v.aiInnovation+'"></div>'+
-          '<div class="inline-edit-row"><label>Biz (1-10)</label><input class="inline-edit-input" id="'+duid+'-biz" type="number" min="1" max="10" value="'+v.businessImpact+'"></div>'+
-          '<div class="inline-edit-row"><label>Pres (1-10)</label><input class="inline-edit-input" id="'+duid+'-pres" type="number" min="1" max="10" value="'+v.presentation+'"></div>'+
-          '<div class="inline-edit-row"><label>Comment</label><input class="inline-edit-input" id="'+duid+'-comment" type="text" value="'+esc(v.comment||'')+'"></div>'+
+        '<div class="inline-edit-form" id="'+esc(duid)+'">'+
+          '<div class="inline-edit-row"><label>AI (1-10)</label><input class="inline-edit-input" id="'+esc(duid)+'-ai" type="number" min="1" max="10" value="'+v.aiInnovation+'"></div>'+
+          '<div class="inline-edit-row"><label>Biz (1-10)</label><input class="inline-edit-input" id="'+esc(duid)+'-biz" type="number" min="1" max="10" value="'+v.businessImpact+'"></div>'+
+          '<div class="inline-edit-row"><label>Pres (1-10)</label><input class="inline-edit-input" id="'+esc(duid)+'-pres" type="number" min="1" max="10" value="'+v.presentation+'"></div>'+
+          '<div class="inline-edit-row"><label>Comment</label><input class="inline-edit-input" id="'+esc(duid)+'-comment" type="text" value="'+esc(v.comment||'')+'"></div>'+
           '<div class="inline-edit-actions">'+
-            '<button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="adminSaveVote(''+sapId+'',''+tid+'',''+duid+'')">Save</button>'+
-            '<button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="adminToggleVoteEdit(''+duid+'')">Cancel</button>'+
+            '<button class="btn btn-primary" style="font-size:12px;padding:5px 12px" data-action="save-vote" data-sapid="'+esc(sapId)+'" data-teamid="'+esc(tid)+'" data-duid="'+esc(duid)+'">Save</button>'+
+            '<button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" data-action="toggle-edit" data-target="'+esc(duid)+'">Cancel</button>'+
           '</div>'+
         '</div>'+
       '</div>';
@@ -1385,42 +1759,54 @@ function renderAdminVoters() {
     return '<tr>'+
       '<td>'+
         '<strong>'+esc(voter.name)+'</strong>'+
-        '<div class="inline-edit-form" id="'+euid+'" style="margin-top:6px">'+
-          '<div class="inline-edit-row"><label>Name</label><input class="inline-edit-input" id="'+euid+'-name" type="text" value="'+esc(voter.name)+'"></div>'+
+        '<div class="inline-edit-form" id="'+esc(euid)+'" style="margin-top:6px">'+
+          '<div class="inline-edit-row"><label>Name</label><input class="inline-edit-input" id="'+esc(euid)+'-name" type="text" value="'+esc(voter.name)+'"></div>'+
           '<div class="inline-edit-row"><label>Role</label>'+
-            '<select class="inline-edit-input" id="'+euid+'-role">'+
+            '<select class="inline-edit-input" id="'+esc(euid)+'-role">'+
               '<option value="student"'+(voter.role==='student'?' selected':'')+'>Student</option>'+
               '<option value="manager"'+(voter.role==='manager'?' selected':'')+'>Manager/Mentor</option>'+
             '</select>'+
           '</div>'+
           '<div class="inline-edit-actions">'+
-            '<button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="adminSaveVoterInfo(''+sapId+'',''+euid+'')">Save</button>'+
-            '<button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="adminToggleVoteEdit(''+euid+'')">Cancel</button>'+
+            '<button class="btn btn-primary" style="font-size:12px;padding:5px 12px" data-action="save-voter" data-sapid="'+esc(sapId)+'" data-euid="'+esc(euid)+'">Save</button>'+
+            '<button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" data-action="toggle-edit" data-target="'+esc(euid)+'">Cancel</button>'+
           '</div>'+
         '</div>'+
       '</td>'+
-      '<td style="color:var(--text2)">'+sapId+'</td>'+
-      '<td><span class="badge '+(voter.role==='student'?'badge-student':'badge-manager')+'">'+ROLE_LABELS[voter.role]+'</span></td>'+
+      '<td style="color:var(--text2)">'+esc(sapId)+'</td>'+
+      '<td><span class="badge '+(voter.role==='student'?'badge-student':'badge-manager')+'">'+esc(ROLE_LABELS[voter.role]||voter.role)+'</span></td>'+
       '<td style="color:var(--text2);font-size:12px">'+vkeys.length+' / '+CHANNELS[adminChannel].teams.length+' teams</td>'+
       '<td><strong style="color:var(--blue)">'+avg.toFixed(2)+'</strong></td>'+
       '<td style="white-space:nowrap">'+
-        '<button class="expand-btn" style="margin-right:4px" onclick="toggleDetail(''+uid+'')">Scores</button>'+
-        '<button class="btn btn-edit" style="font-size:11px;padding:3px 8px;margin-right:4px" onclick="adminToggleVoteEdit(''+euid+'')">Edit</button>'+
-        '<button class="btn btn-danger" style="font-size:11px;padding:3px 8px" onclick="adminDeleteVoter(''+sapId+'')">Delete</button>'+
+        '<button class="expand-btn" style="margin-right:4px" data-action="toggle-detail" data-target="'+esc(uid)+'">Scores</button>'+
+        '<button class="btn btn-edit" style="font-size:11px;padding:3px 8px;margin-right:4px" data-action="toggle-edit" data-target="'+esc(euid)+'">Edit</button>'+
+        '<button class="btn btn-danger" style="font-size:11px;padding:3px 8px" data-action="delete-voter" data-sapid="'+esc(sapId)+'">Delete</button>'+
       '</td>'+
     '</tr>'+
-    '<tr class="voter-detail-row" id="'+uid+'"><td colspan="6"><div style="padding:4px 0">'+detailRows+'</div></td></tr>';
+    '<tr class="voter-detail-row" id="'+esc(uid)+'"><td colspan="6"><div style="padding:4px 0">'+detailRows+'</div></td></tr>';
   }).join('');
   el.innerHTML='<table class="voter-table"><thead><tr><th>Name</th><th>SAP ID</th><th>Role</th><th>Progress</th><th>Avg Score</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
+
+// Event delegation for admin voter table — avoids inline-onclick injection
+document.getElementById('adminVoterList').addEventListener('click', function(e) {
+  var btn=e.target.closest('button[data-action]'); if(!btn) return;
+  var action=btn.getAttribute('data-action');
+  if(action==='toggle-detail') { toggleDetail(btn.getAttribute('data-target')); }
+  else if(action==='toggle-edit') { adminToggleVoteEdit(btn.getAttribute('data-target')); }
+  else if(action==='delete-vote') { adminDeleteVote(btn.getAttribute('data-sapid'), btn.getAttribute('data-teamid')); }
+  else if(action==='delete-voter') { adminDeleteVoter(btn.getAttribute('data-sapid')); }
+  else if(action==='save-vote') { adminSaveVote(btn.getAttribute('data-sapid'), btn.getAttribute('data-teamid'), btn.getAttribute('data-duid')); }
+  else if(action==='save-voter') { adminSaveVoterInfo(btn.getAttribute('data-sapid'), btn.getAttribute('data-euid')); }
+});
 function toggleDetail(id){var el=document.getElementById(id);el.style.display=el.style.display==='table-row'?'none':'table-row';}
 function adminToggleVoteEdit(uid){var el=document.getElementById(uid);el.classList.toggle('open');}
 
 function adminSaveVote(sapId,teamId,duid){
-  var ai=Math.min(10,Math.max(1,+document.getElementById(duid+'-ai').value||5));
-  var biz=Math.min(10,Math.max(1,+document.getElementById(duid+'-biz').value||5));
-  var pres=Math.min(10,Math.max(1,+document.getElementById(duid+'-pres').value||5));
-  var comment=document.getElementById(duid+'-comment').value.trim();
+  var ai=clampScore(document.getElementById(duid+'-ai').value);
+  var biz=clampScore(document.getElementById(duid+'-biz').value);
+  var pres=clampScore(document.getElementById(duid+'-pres').value);
+  var comment=String(document.getElementById(duid+'-comment').value||'').trim().slice(0,2000);
   if(!allVotesData[adminChannel]||!allVotesData[adminChannel][sapId]) return;
   allVotesData[adminChannel][sapId].votes[teamId]={aiInnovation:ai,businessImpact:biz,presentation:pres,comment:comment};
   saveLocal();
@@ -1465,33 +1851,41 @@ function renderAdminTopics() {
   if(!el) return;
   el.innerHTML='';
   SHOWCASE_TEAMS.forEach(function(team) {
-    var blk=SHOWCASE_BLOCKS.filter(function(b){return b.id===team.block;})[0];
+    var blk=SHOWCASE_BLOCKS.filter(function(b){return b.id===team.block;})[0]||SHOWCASE_BLOCKS[0];
     var tid=team.id.replace(/\W/g,'_');
     var topic=teamTopics[team.id]||'';
     var div=document.createElement('div');
     div.className='topic-item';
     div.innerHTML=
       '<div class="topic-item-header">'+
-        '<span class="topic-item-name">'+team.name+'</span>'+
-        '<span style="font-size:11px;font-weight:700;background:'+blk.bg+';color:'+blk.color+';padding:2px 7px;border-radius:8px">'+blk.label+'</span>'+
+        '<span class="topic-item-name">'+esc(team.name)+'</span>'+
+        '<span style="font-size:11px;font-weight:700;background:'+esc(blk.bg)+';color:'+esc(blk.color)+';padding:2px 7px;border-radius:8px">'+esc(blk.label)+'</span>'+
       '</div>'+
-      '<div class="topic-current" id="tc-'+tid+'" style="min-height:16px">'+
-        (topic?esc(topic):'<span style=\'color:var(--text3);font-style:italic\'>No topic set</span>')+
+      '<div class="topic-current" id="tc-'+esc(tid)+'" style="min-height:16px">'+
+        (topic?esc(topic):'<span style="color:var(--text3);font-style:italic">No topic set</span>')+
       '</div>'+
-      '<div class="topic-edit-row" id="ter-'+tid+'">'+
-        '<input class="topic-edit-input" id="ti-'+tid+'" type="text" placeholder="Enter topic..." value="'+esc(topic)+'">'+
-        '<button class="btn btn-primary" style="font-size:12px;padding:5px 10px;white-space:nowrap" onclick="adminSaveTopic(''+team.id+'',''+tid+'')">Save</button>'+
-        '<button class="btn btn-secondary" style="font-size:12px;padding:5px 10px" onclick="adminToggleTopic(''+tid+'')">&#x2715;</button>'+
+      '<div class="topic-edit-row" id="ter-'+esc(tid)+'">'+
+        '<input class="topic-edit-input" id="ti-'+esc(tid)+'" type="text" placeholder="Enter topic..." value="'+esc(topic)+'">'+
+        '<button class="btn btn-primary" style="font-size:12px;padding:5px 10px;white-space:nowrap" data-topic-action="save" data-teamid="'+esc(team.id)+'" data-tid="'+esc(tid)+'">Save</button>'+
+        '<button class="btn btn-secondary" style="font-size:12px;padding:5px 10px" data-topic-action="toggle" data-tid="'+esc(tid)+'">&#x2715;</button>'+
       '</div>'+
-      '<button class="btn btn-edit" style="margin-top:6px;font-size:11px;padding:3px 8px" onclick="adminToggleTopic(''+tid+'')">'+
+      '<button class="btn btn-edit" style="margin-top:6px;font-size:11px;padding:3px 8px" data-topic-action="toggle" data-tid="'+esc(tid)+'">'+
         (topic?'Edit topic':'+ Add topic')+
       '</button>';
     el.appendChild(div);
   });
 }
-function adminToggleTopic(tid){document.getElementById('ter-'+tid).classList.toggle('open');}
+// Delegated topic editor handlers — attach once
+document.getElementById('adminTopicsGrid').addEventListener('click', function(e){
+  var btn=e.target.closest('button[data-topic-action]'); if(!btn) return;
+  var action=btn.getAttribute('data-topic-action');
+  if(action==='toggle') adminToggleTopic(btn.getAttribute('data-tid'));
+  else if(action==='save') adminSaveTopic(btn.getAttribute('data-teamid'), btn.getAttribute('data-tid'));
+});
+function adminToggleTopic(tid){var el=document.getElementById('ter-'+tid); if(el) el.classList.toggle('open');}
 function adminSaveTopic(teamId,tid){
-  var val=document.getElementById('ti-'+tid).value.trim();
+  var inp=document.getElementById('ti-'+tid); if(!inp) return;
+  var val=String(inp.value||'').trim().slice(0,500);
   if(val) teamTopics[teamId]=val; else delete teamTopics[teamId];
   saveLocal();
   if(window.JSONBIN_CONFIGURED) saveRemote().catch(function(){});
